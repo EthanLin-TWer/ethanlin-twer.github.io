@@ -1,0 +1,90 @@
+<p>讨论这个的前件：在前端工程化的子话题——模块化中，模块化架构对模块管理、请求合并、按需加载几个子问题有着非常重要的意义。在此前，我们需要了解</p>
+
+<p>三个疑问：</p>
+
+<ul>
+  <li>如何做到并行下载顺序执行？</li>
+  <li>如何保证一段js代码依赖的所有文件在其执行前都被执行完毕？（呃……不就是顺序执行的问题嘛。有个前提是需要程序员自己去指定加载顺序，能否由框架自动去处理这个事情呢？）</li>
+  <li>若有多个脚本，只有其中一部分被声明为<code class="highlighter-rouge">async</code>，此时会触发document的渲染吗？看了一下，并不会，但有些操作DOM的代码却可以工作了，是不是暗示着，async的脚本会在DOM加载完再被执行</li>
+</ul>
+
+<h2 id="javascript代码的声明方式">JavaScript代码的声明方式</h2>
+
+<p>主要有两种：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">&lt;script&gt;</code>标签中直接写入</li>
+  <li>通过<code class="highlighter-rouge">&lt;script&gt;</code>标签引入外部文件。外部文件来源又可能为：
+    <ul>
+      <li>本地文件</li>
+      <li>须由网络节点下载</li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="浏览器端javascript代码的生命周期">浏览器端JavaScript代码的生命周期</h2>
+
+<p>JavaScript代码在浏览器端的执行一般要经历三个阶段：加载、执行、等待事件，其中前两个阶段在 <a href="">JavaScript权威指南（第6版）</a>中被统称脚本执行阶段、后面一个阶段统称事件处理阶段。</p>
+
+<h3 id="加载和执行">加载和执行</h3>
+
+<p>对于来源不同的js代码/文件，加载过程意味着：</p>
+
+<ul>
+  <li>在<code class="highlighter-rouge">&lt;script&gt;</code>标签中直接写入的js代码：加载意味着把代码读取进来（可能读到内存【废话】中，也可能到执行引擎中，这里的说法不是特别严谨，但从概念模型上就是这么理解，实现细节与术语还得看规范和浏览器实现）</li>
+  <li>在<code class="highlighter-rouge">&lt;script&gt;</code>标签中引入的本地js文件：加载意味着把js代码 <strong>下载并读取</strong> 进来</li>
+  <li>在<code class="highlighter-rouge">&lt;script&gt;</code>标签中引入的网络js文件：加载意味着把js代码 <strong>下载并读取</strong> 进来</li>
+</ul>
+
+<p><strong>理论模型上</strong>，加载和执行是同步阻塞的。即默认情况下，解析引擎会先去加载脚本，加载完毕以后马上执行。只有执行完一段脚本后，才能开始对下一段脚本的加载和执行，这个过程是按照脚本之间定义的顺序串行执行的。</p>
+
+<p><strong>在理论模型上</strong>，浏览器会先尝试下载和渲染样式（css文件等），因为js可能会引用到最新的样式（比如<code class="highlighter-rouge">var width = $('#chatBox').width()</code>。而资源（如img等）是否下载则取决于js的执行结果，DOM树的渲染也会被阻塞到所有js加载完成后，原因是一致的，都是因为js可能操作DOM（写入节点，删除节点，写入或删除资源标签等）从而动态更新其内容，因此此时去提前下载资源或渲染DOM树是没有意义的。</p>
+
+<h3 id="并行下载浏览器的prefetch">并行下载（浏览器的Prefetch）</h3>
+
+<p>由于javascript文件的加载和执行是同步且阻塞的，对于大量或体积大的js文件，加载执行起来可能占用很长时间，影响DOM树的渲染速度。因此，现代浏览器一般都能完成智能优化，开启多个线程尽快地并行下载资源文件（称为<a href="https://lifesinger.wordpress.com/2012/02/03/performance-impact-of-js-css-loading-order/">预取，Prefetch</a>。这与是否标注了<code class="highlighter-rouge">defer</code>或<code class="highlighter-rouge">async</code>标志关系不大，更多是浏览器自身的优化行为。【如何证明？】</p>
+
+<h3 id="dom树的提前渲染">DOM树的提前渲染</h3>
+
+<p>这样我们还有另外一个痛点，就是js代码的执行是阻塞性的，这很大程度上影响了DOM树的渲染，使得用户无法快速看到页面效果。这也是为什么有<a href="http://stackoverflow.com/questions/3952009/defer-attribute-chrome">“尽量把javascript代码声明在文档后面”</a>这样建议的原因，也有一些做法是监听到<code class="highlighter-rouge">window.onload()</code>事件时去加载脚本代码，还有一部分建议是 <a href="https://www.nczonline.net/blog/2009/06/23/loading-javascript-without-blocking/">动态添加<code class="highlighter-rouge">&lt;script&gt;</code>节点</a>。此外，也有很多脚本是不操作DOM的，在这些脚本的加载执行阶段，也没必要阻塞掉DOM树的渲染。</p>
+
+<p>为了解决这个问题，IE浏览器在<code class="highlighter-rouge">&lt;script&gt;</code>标签上提供了一个<code class="highlighter-rouge">defer</code>属性，加上了这个属性的<code class="highlighter-rouge">&lt;script&gt;</code>片段相当于就是在告诉浏览器，“我保证我不会操作DOM，你可以进行提前渲染。要是我违反了承诺，则DOM树渲染引起的错乱由我负责”。这样，浏览器加载这段代码的时候不会等待它的执行，而会去开始渲染DOM树。等这段（或多段）脚本加载完成以后，将按它们被声明的次序顺序执行。</p>
+
+<p>这是非常完美的解决方案，可惜<a href="http://caniuse.com/#search=defer">只有IE和少部分浏览器上支持</a>。为此，HTML5规范中提出了一个<code class="highlighter-rouge">async</code>属性，它也允许脚本加载时的非阻塞渲染，而且在浏览器间<a href="http://caniuse.com/#search=async">具有更好的支持度</a>。但它也有一个缺点，即它承诺的是脚本加载后立即执行，但并不保证执行的次序。这对于依赖于执行顺序的脚本来说是很糟糕的。同时，这个属性中也没有回答这样两个问题：</p>
+
+<ul>
+  <li>对于多个<code class="highlighter-rouge">&lt;script&gt;</code>标签，部分有<code class="highlighter-rouge">async</code>部分没有，此时是会触发DOM树的渲染，还是阻塞在没有<code class="highlighter-rouge">async</code>属性的脚本加载上？</li>
+  <li>异步脚本加载完成后“立即执行”，是否会打断可能尚在进行的DOM树渲染过程？</li>
+</ul>
+
+<p>这几个问题，后面动手验证部分解答。</p>
+
+<h3 id="并行下载顺序执行镣铐下的最终方案labjs">并行下载顺序执行——镣铐下的最终方案：LABjs</h3>
+
+<p><a href="https://github.com/getify/LABjs">LABjs</a>
+<a href="http://labjs.com/">LABjs</a></p>
+
+<h2 id="那么最佳实践是什么">那么最佳实践是什么？</h2>
+
+<h2 id="有图有真相">有图有真相</h2>
+
+<h2 id="加载次序应该是应用层应该考虑的细节吗">加载次序应该是应用层应该考虑的细节吗？</h2>
+
+<p>尽管<code class="highlighter-rouge">async</code>+LABjs的方案似乎已经足够完美，但仔细想想，脚本的加载顺序真的应该是程序员应该考虑的问题吗？在现代大前端发展道路上的另一个问题探索上，间接地解决了脚本加载次序的问题。这个问题叫模块化，工程师们发现不能按需加载的根本问题在于你必须运行时去分析依赖。听到这句话，解决方案想必已经很清楚了，那就是编译时（前端叫构建时）分析依赖呗。这么一来，所有脚本都会在运行前被构建打包，因此加载次序的问题也就不存在了。</p>
+
+<h2 id="构建时依赖分析终极解决方案">构建时依赖分析——终极解决方案</h2>
+
+<p>前端遇到难题时，不妨想想相同问题下后端是怎么解决的。</p>
+
+<h2 id="其他实现顺序执行的框架">其他实现顺序执行的框架</h2>
+
+<ul>
+  <li><a href="">ControllJS</a></li>
+  <li><a href="">HeadJS</a></li>
+  <li><a href="">RequestJS</a></li>
+</ul>
+
+<blockquote>
+  <p>js同步加载执行的过程，“DOM树的渲染是被阻塞的”。这里“渲染被阻塞”仅仅意味着它在浏览器中不会被显示出来，而未暗示此时DOM树的加载情况（是尚未解析、还是已解析完存在于内存中，仅仅是还未被浏览器渲染）。
+在声明js代码的三种方式中，直接写在<code class="highlighter-rouge">&lt;script&gt;</code>标签中的代码是最先被执行的，尽管此时其他脚本可能仍在下载。这可能是浏览器的优化行为。</p>
+</blockquote>

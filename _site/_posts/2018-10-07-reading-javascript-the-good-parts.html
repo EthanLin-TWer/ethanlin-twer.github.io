@@ -1,0 +1,491 @@
+<p>重温经典。这本书告诉你，什么是不好的 JavaScript，这与知道什么是精华的 JavaScript 一样重要。正所谓非彼无我，非我无所取。</p>
+
+<h2 id="目录">目录</h2>
+
+<ul>
+  <li>导读</li>
+  <li>语言基本要素</li>
+  <li>精华</li>
+  <li>糟粕</li>
+</ul>
+
+<h2 id="导读">导读</h2>
+
+<p>这次读这本书可谓是带着目的而来。国庆在家给自己接下来定了学习计划：要深入了解 JavaScript 这门语言。另外，我也不是编程语言圣战中的一名教徒，工作三年之余，除了胜任手上的工作以外，也有更高的学习要求：<strong>了解技术本质</strong>、<strong>了解技术价值观</strong>、<strong>了解技术史</strong>。所以，除了了解 JavaScript 这门语言的好坏外，也是要从编程语言这个视角，了解一门语言的基本要素，以及不同语言间的异同，为日后打好基础。基于这个思路，这本书尝试回答的问题正是我所需要的：</p>
+
+<ol>
+  <li>JavaScript 的基本语言要素</li>
+  <li>JavaScript 的精华</li>
+  <li>JavaScript 的毒瘤和糟粕（以下统称糟粕，区分其差异不是本次阅读的目的）</li>
+</ol>
+
+<p>基本语言要素，可以迁移到其他语言的学习上去；精华，值得仔细学习，我开了一些文章；糟粕可以直接用一份 ESLint/prettier 规则来描述。重点在于学习精华，糟粕了解后用上 ESLint 忘掉即可。</p>
+
+<h2 id="语言基本要素">语言基本要素</h2>
+
+<ul>
+  <li>语法要素：空格、注释、标识符、数字、字符串、语句、表达式、字面量等</li>
+  <li>三大编程结构（顺序、条件、循环）</li>
+  <li>数据结构：
+    <ul>
+      <li>类型：弱类型</li>
+      <li>种类：基本类型 / 对象 / 数组</li>
+    </ul>
+  </li>
+  <li>函数：代码复用、组合、模块化、信息隐藏</li>
+  <li>继承：代码复用</li>
+  <li>API</li>
+  <li>元编程</li>
+</ul>
+
+<p>语法要素不详细讲，在学习其他编程语言时可以迁移；三大编程结构应该是任何编程语言都应该具备的功能了；弱类型、函数、继承都是 JavaScript 的精华所在，放在精华一节说；至于 API，揉在弱类型一节讲；元编程是大学毕业设计的时候种下的一个种子，可惜这本书中这个主题体现不多，故也略去为敬。</p>
+
+<h2 id="精华">精华</h2>
+
+<p>看完书，总结了一下，JS 的精华大概就这三点：</p>
+
+<ul>
+  <li>弱类型 &amp; JSON/array literal</li>
+  <li>函数</li>
+  <li>继承</li>
+</ul>
+
+<h3 id="弱类型">弱类型</h3>
+
+<p>弱类型意味着很多事，一是写代码的时候你可以不用在意类型了，开发快；二是更优雅的表达力；三是更有表达力的继承方案的可能性（在继承一小节谈）。当然，类型系统对于编译期的问题发现也是很有价值的，在重构的时候也能给 IDE 提供更多的帮助。但作者认为，靠类型系统发现的 bug，不多也不大，相比起来类型系统就太重量，而弱类型是兼顾表达力和项目价值的优雅方案。</p>
+
+<p>JS 有哪些类型呢？一言以蔽之，除了三种基本类型，其他都是对象。包括函数也是对象。基本类型有 <code class="highlighter-rouge">string</code>、<code class="highlighter-rouge">boolean</code>、<code class="highlighter-rouge">number</code> 三种，其他的诸如对象字面量、数组、正则表达式、日期对象、原型对象等，都是 <code class="highlighter-rouge">object</code> 类型的对象。</p>
+
+<p><img src="https://i.stack.imgur.com/L1tYe.png" alt="JavaScript Data Types" /></p>
+
+<p>与 Java 这门强类型语言做对比，它的 String、Array、Map 都是类型，为了具有类型的方法，不得不使用一个类，有时仅需要存取数据时就显得多余。相比之下，JS 创建字符串、对象和数组就简单得多了，见下面代码段。可不要习以为常，直接写 <code class="highlighter-rouge">{}</code> <code class="highlighter-rouge">[]</code> 创建对象和数组的写法是 JS 所支持，带来了极度轻量的便利。其中起源于 JS 的对象结构 JSON（JavaScript Object Notation）更是成了一种通用的数据交换格式。</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">human</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="na">name</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Lao Wang</span><span class="dl">'</span><span class="p">,</span>
+  <span class="na">age</span><span class="p">:</span> <span class="mi">35</span><span class="p">,</span>
+  <span class="na">ready</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="kd">const</span> <span class="nx">primes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">29</span><span class="p">,</span> <span class="mi">31</span><span class="p">]</span>
+</code></pre></div></div>
+
+<h3 id="函数">函数</h3>
+
+<p>JavaScript 里面函数是一等公民。这意味着啥呢？一等公民表示，函数也与普通数据类型一样了，可以作函数参数被传递、可以做返回值。这意味着函数式编程变得可能了，意味着闭包技术这种基于函数级别的轻量级数据封装方案变得可能了，柯里化也变得可能了，这一切带来的是更灵活的封装、数据操作能力。甚至它使 JavaScript 得以用一种轻量的方式来实现继承。这也是我当时喜欢上 JavaScript 的原因。</p>
+
+<p>函数也是其他任意语言中的基本要素，下面从<strong>基本语法要素</strong>，以及上面提到的<strong>函数式</strong>、<strong>闭包</strong>、<strong>柯里化</strong>等方面提一下精华点。</p>
+
+<h4 id="基本要素">基本要素</h4>
+
+<ul>
+  <li>语法（<code class="highlighter-rouge">function</code> 关键字、函数名、函数参数、函数体、返回值）</li>
+  <li>函数调用模式：JS 里复杂且灵活的地方，下面详述</li>
+  <li>参数对象 <code class="highlighter-rouge">argument</code>：它只是个伪数组，有点毛病，ES6 以后就应该弃用了</li>
+  <li>作用域：有函数作用域，ES6 以后才有块作用域。现在基本完美</li>
+  <li>递归：<a href="http://www.ruanyifeng.com/blog/2015/04/tail-call.html">ES6 以后将部署尾递归优化写入规范</a></li>
+  <li>闭包：函数级别的信息隐藏、模块化方案。在 Java 中同样的事必须用一个静态内部类才能实现</li>
+  <li>回调：延伸到 <code class="highlighter-rouge">callback</code>、<code class="highlighter-rouge">Promise</code>、<code class="highlighter-rouge">async/await</code> 等一些东西。书里没讲，我也不讲</li>
+  <li>柯里化：业务应用常见模式</li>
+</ul>
+
+<h4 id="函数调用模式">函数调用模式</h4>
+
+<p>很遗<del>jing</del>憾<del>xi</del>，在 JS 中一个函数可能有很多的调用方式。函数体反正都是要执行的，<strong>唯一区别在于 this 引用如何被初始化</strong>的问题。我们一共有 4 种方案，由于太多，废弃掉第三种和第四种。一般写业务代码，第一二种调用是最常见的。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">函数调用模式</th>
+      <th style="text-align: center">形式</th>
+      <th style="text-align: center">this 绑定</th>
+      <th style="text-align: center">适用场景</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">方法调用</td>
+      <td style="text-align: center"><code class="highlighter-rouge">object.method()</code></td>
+      <td style="text-align: center">被调用的对象 <code class="highlighter-rouge">object</code> 上</td>
+      <td style="text-align: center">对象实例的方法调用。既成其对象，说明必维护了内部状态</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">函数调用</td>
+      <td style="text-align: center"><code class="highlighter-rouge">method()</code></td>
+      <td style="text-align: center">全局对象 <code class="highlighter-rouge">window</code> / <code class="highlighter-rouge">global</code></td>
+      <td style="text-align: center">不需要对象状态的函数。应全采用箭头函数</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">构造函数调用</td>
+      <td style="text-align: center"><code class="highlighter-rouge">new Object().method()</code></td>
+      <td style="text-align: center">被创建的 <code class="highlighter-rouge">Object</code> 实例对象</td>
+      <td style="text-align: center">bug 之源，应当抛弃</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">apply 模式调用</td>
+      <td style="text-align: center"><code class="highlighter-rouge">method.apply(target, arguments)</code></td>
+      <td style="text-align: center">绑定到传入的 <code class="highlighter-rouge">target</code> 上</td>
+      <td style="text-align: center">似乎有用，其实完全没用</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>其中：</p>
+
+<ul>
+  <li>第二种方案，由于 <code class="highlighter-rouge">this</code> 引用不会被正确初始化，因此一是尽量用于不维护内部状态的函数，二是应全部应用箭头函数，它修复了 <code class="highlighter-rouge">this</code> 引用的 bug</li>
+  <li>抛弃第三种方案，一是因为一旦忘记用 <code class="highlighter-rouge">new</code> 运算符，<code class="highlighter-rouge">this</code> 会直接绑定到全局对象，并且无任何编译期和运行期的提示；二是因为没有任何使用场景。做类继承时应该全用 ES6 的 <code class="highlighter-rouge">class</code> API</li>
+  <li>第四种方案，一开始以为有两个场景会用到：写框架代码时、做柯里化时。后来自己一写，发现实现柯里化不需要使用 <code class="highlighter-rouge">apply</code>；而框架代码，至今未见使用场景，故留作疑问</li>
+</ul>
+
+<h4 id="函数式">函数式</h4>
+
+<p>函数式是一种高阶的声明式编程范式，相对于「怎么做」，它让你得以以「做什么」的方式写代码，既有强的表达力，又有低的编写成本。当然，对维护者的代码能力提出了要求。</p>
+
+<p>使用函数式的目标就是，看到 <code class="highlighter-rouge">for-in</code>、<code class="highlighter-rouge">for-of</code>、<code class="highlighter-rouge">forEach</code> 就要考虑是否可以用函数式去代替。</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// from:</span>
+<span class="kd">let</span> <span class="nx">result</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&gt;</span> <span class="nx">people</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="nx">person</span> <span class="o">=</span> <span class="nx">people</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span>
+  <span class="nx">result</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span> <span class="na">age</span><span class="p">:</span> <span class="nx">person</span><span class="p">.</span><span class="nx">age</span><span class="p">,</span> <span class="na">name</span><span class="p">:</span> <span class="nx">person</span><span class="p">.</span><span class="nx">name</span> <span class="p">})</span>
+<span class="p">}</span>
+<span class="c1">// to:</span>
+<span class="kd">let</span> <span class="nx">persons</span> <span class="o">=</span> <span class="nx">people</span><span class="p">.</span><span class="nx">map</span><span class="p">(({</span> <span class="nx">age</span><span class="p">,</span> <span class="nx">name</span> <span class="p">})</span> <span class="o">=&gt;</span> <span class="p">({</span> <span class="nx">age</span><span class="p">,</span> <span class="nx">name</span> <span class="p">}))</span>
+
+<span class="c1">// from:</span>
+<span class="kd">let</span> <span class="nx">teenagers</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">person</span> <span class="k">in</span> <span class="nx">people</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">person</span><span class="p">.</span><span class="nx">age</span> <span class="o">&lt;</span> <span class="mi">25</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">teenagers</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">person</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="c1">// to:</span>
+<span class="kd">const</span> <span class="nx">teenagers</span> <span class="o">=</span> <span class="nx">people</span><span class="p">.</span><span class="nx">filter</span><span class="p">(({</span> <span class="nx">age</span> <span class="p">})</span> <span class="o">=&gt;</span> <span class="nx">age</span> <span class="o">&lt;</span> <span class="mi">25</span><span class="p">)</span>
+
+<span class="c1">// from:</span>
+<span class="kd">const</span> <span class="nx">people</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="na">Jack</span><span class="p">:</span> <span class="p">{</span> <span class="na">age</span><span class="p">:</span> <span class="mi">25</span><span class="p">,</span> <span class="na">gender</span><span class="p">:</span> <span class="dl">'</span><span class="s1">male</span><span class="dl">'</span> <span class="p">},</span>
+  <span class="na">Maria</span><span class="p">:</span> <span class="p">{</span> <span class="na">age</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="na">gender</span><span class="p">:</span> <span class="dl">'</span><span class="s1">female</span><span class="dl">'</span> <span class="p">},</span>
+<span class="p">}</span>
+<span class="kd">const</span> <span class="nx">result</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="nb">Object</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="nx">people</span><span class="p">).</span><span class="nx">forEach</span><span class="p">((</span><span class="nx">name</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">result</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span>
+    <span class="nx">name</span><span class="p">,</span>
+    <span class="na">age</span><span class="p">:</span> <span class="nx">people</span><span class="p">[</span><span class="nx">name</span><span class="p">].</span><span class="nx">age</span><span class="p">,</span>
+    <span class="na">gender</span><span class="p">:</span> <span class="nx">people</span><span class="p">[</span><span class="nx">name</span><span class="p">].</span><span class="nx">gender</span><span class="p">,</span>
+  <span class="p">})</span>
+<span class="p">})</span>
+<span class="c1">// to:</span>
+<span class="kd">const</span> <span class="nx">result</span> <span class="o">=</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">entries</span><span class="p">(</span><span class="nx">people</span><span class="p">).</span><span class="nx">map</span><span class="p">(([</span><span class="nx">name</span><span class="p">,</span> <span class="p">{</span> <span class="nx">age</span><span class="p">,</span> <span class="nx">gender</span> <span class="p">}])</span> <span class="o">=&gt;</span> <span class="p">({</span>
+  <span class="nx">name</span><span class="p">,</span>
+  <span class="nx">age</span><span class="p">,</span>
+  <span class="nx">gender</span><span class="p">,</span>
+<span class="p">}))</span>
+</code></pre></div></div>
+
+<h4 id="闭包">闭包</h4>
+
+<p>闭包实质上是留存变量、可访问性控制的一个方案，它比 Java 类级别的 private 控制粒度更小。在 JS 中只能利用函数级作用域来做访问控制：</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">incrementer</span> <span class="o">=</span> <span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">let</span> <span class="nx">count</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="k">return</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="o">++</span><span class="nx">count</span>
+  <span class="p">}</span>
+<span class="p">})()</span>
+</code></pre></div></div>
+
+<h4 id="柯里化">柯里化</h4>
+
+<p>假定读者有一定 JS 基础，都已经知道柯里化是啥了。这里回答有啥用的问题：对于多个参数的方法，可先部分应用相同的参数，然后再对不同的部分进行定制、调用，以达到复用、定制的目的。项目出现过这样的场景，可以认为是一个二阶柯里化：</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">sendTrackRequest</span> <span class="o">=</span> <span class="p">(</span><span class="nx">userId</span><span class="p">,</span> <span class="nx">siteId</span><span class="p">,</span> <span class="nx">generalParams</span><span class="p">,</span> <span class="nx">extraParams</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{}</span>
+<span class="kd">const</span> <span class="nx">trackPageView</span> <span class="o">=</span> <span class="p">(</span><span class="nx">userId</span><span class="p">,</span> <span class="nx">siteId</span><span class="p">,</span> <span class="nx">generalParams</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">(</span><span class="nx">action</span><span class="p">,</span> <span class="nx">url</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">const</span> <span class="nx">pageViewParams</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">action</span><span class="p">,</span> <span class="nx">url</span> <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">sendTrackRequest</span><span class="p">(</span><span class="nx">userId</span><span class="p">,</span> <span class="nx">siteId</span><span class="p">,</span> <span class="nx">generalParams</span><span class="p">,</span> <span class="nx">pageViewParams</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="kd">const</span> <span class="nx">trackEvent</span> <span class="o">=</span> <span class="p">(</span><span class="nx">userId</span><span class="p">,</span> <span class="nx">siteId</span><span class="p">,</span> <span class="nx">generalParams</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">(</span><span class="nx">category</span><span class="p">,</span> <span class="nx">action</span><span class="p">,</span> <span class="nx">eventName</span><span class="p">,</span> <span class="nx">eventArgs</span> <span class="o">=</span> <span class="p">{})</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">const</span> <span class="nx">eventParams</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">category</span><span class="p">,</span> <span class="nx">action</span><span class="p">,</span> <span class="nx">eventName</span><span class="p">,</span> <span class="nx">eventArgs</span> <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">sendTrackRequest</span><span class="p">(</span><span class="nx">userId</span><span class="p">,</span> <span class="nx">siteId</span><span class="p">,</span> <span class="nx">generalParams</span><span class="p">,</span> <span class="nx">eventParams</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>一个通用的柯里化函数实现如下。第 6 行的代码参考了<a href="https://github.com/mqyqingfeng/Blog/issues/42#issuecomment-411428875">这个写法</a>，其余是自己写的。</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">curry</span> <span class="o">=</span> <span class="p">(</span><span class="nx">func</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="kd">function</span> <span class="nx">continueCurry</span><span class="p">(...</span><span class="nx">args</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">args</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;=</span> <span class="nx">func</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">func</span><span class="p">(...</span><span class="nx">args</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="p">(...</span><span class="nx">next</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">continueCurry</span><span class="p">(...</span><span class="nx">args</span><span class="p">,</span> <span class="p">...</span><span class="nx">next</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="继承">继承</h3>
+
+<p>继承的本质，是为了实现「代码复用」，并且通常是数据+行为的复用。不同于 Java 这样的强类型语言，JavaScript 没有类，也没有强类型的束缚，因此它得以实现一套更加清爽、更加简洁的继承体系。当然，这套方案就是大家所熟知的原型继承。</p>
+
+<p>就方案来讲，ES6 提供的 <code class="highlighter-rouge">class</code> 语法糖是目前最完美的 API 了。不过虽然它长得很像 Java 的类，但其实它根本就不是类，底下的实现还是完全用的原型继承。关于继承相关的东西，另起了两篇博客进行了详尽的探究：</p>
+
+<ul>
+  <li>https://blog.linesh.tw/#/post/2018-10-18-javascript-prototypal-inheritance</li>
+  <li>https://blog.linesh.tw/#/post/2018-10-21-deep-dive-into-babel-inheritance</li>
+</ul>
+
+<h2 id="糟粕">糟粕</h2>
+
+<p>原书中把 JavaScript 不好的东西分两种：毒瘤和糟粕。简而言之，毒瘤就是一无是处的特性，应该用都不用；糟粕是那些有时很有用，有时又很坑的特性，这样的特性更要规避，因为你只有深入思考阅读才能知道功能正常还是坑，这违反编程语言应该直接、表达力强的价值观。在这里，具体区分不是重点，我列出来一些书里提到的糟粕特性，这些特性<strong>都不要用</strong>就对了。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">糟粕</th>
+      <th style="text-align: center">建议</th>
+      <th style="text-align: center">规避方法</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">全局变量</td>
+      <td style="text-align: center">❌</td>
+      <td style="text-align: center">NodeJS 每个文件都有自己的作用域，部分解决此问题</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">伪数组</td>
+      <td style="text-align: center">❌</td>
+      <td style="text-align: center">用 ES6 的参数解构代替 <code class="highlighter-rouge">argument</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><code class="highlighter-rouge">eval</code></td>
+      <td style="text-align: center">❌</td>
+      <td style="text-align: center">lint 工具无效；注入攻击；降低性能</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">缺少块的语句</td>
+      <td style="text-align: center">❌</td>
+      <td style="text-align: center">使用 ESLint 禁止</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">自动插入分号</td>
+      <td style="text-align: center">❌</td>
+      <td style="text-align: center">使用 ESLint 禁止一些易出 bug 的写法</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><code class="highlighter-rouge">continue</code></td>
+      <td style="text-align: center">❌</td>
+      <td style="text-align: center">ESLint <code class="highlighter-rouge">no-continue</code>: 任何 <code class="highlighter-rouge">continue</code> 都应该重构掉</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">类型的包装对象</td>
+      <td style="text-align: center">❌</td>
+      <td style="text-align: center">ESLint: <code class="highlighter-rouge">no-new-wrappers</code>: 使用基本类型、<code class="highlighter-rouge">{}</code>等替代</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><code class="highlighter-rouge">void</code></td>
+      <td style="text-align: center">❌</td>
+      <td style="text-align: center">ESLint: <code class="highlighter-rouge">no-void</code>: 没场景</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><code class="highlighter-rouge">==</code> &amp;&amp; 假值表</td>
+      <td style="text-align: center">❌</td>
+      <td style="text-align: center">ESLint: <code class="highlighter-rouge">eqeqeq</code>: 一律用 <code class="highlighter-rouge">===</code>/<code class="highlighter-rouge">!==</code> 避免类型转换</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><code class="highlighter-rouge">new Function()</code></td>
+      <td style="text-align: center">❌</td>
+      <td style="text-align: center">一旦忘记，<code class="highlighter-rouge">this</code>就会绑定到全局对象，且无任何提示</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">无模块</td>
+      <td style="text-align: center">–</td>
+      <td style="text-align: center">已有 import/export、CommonJS、UMD 等模块化解决方案</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>这些东西，其实就只是学习用。在项目中，必须要用一个 ESLint 和 prettier 来加以规范，一个是你很难始终记住所有的规则，一个是你不能保证所有人都能始终遵守。于是，我自己写了个 <a href="https://github.com/linesh-simplicity/eslint-config-javascript-the-good-parts">ESLint 规则</a>，用来在自己的个人项目中使用。</p>
+
+<p>关于代码风格这事，作为一个洁癖患者我必须多说两句。我一直是把代码当程序员的「作品」来看，就好像小说之于其作者、音乐词曲之于作曲者，都是精雕细琢、明心见性的东西，容不得半点马虎。就好比《黄金时代》之于王小波，好比《燕窝》之于吴青峰。它的美，不仅来源于内容，而且在于内容的表达形式。经常有人认为，内容是独立于形式之外的，内容好就行，形式怎样都不会影响内容。<a href="https://book.douban.com/subject/26319730/">《娱乐至死》</a>告诉大家，错了。媒介（形式）不仅影响内容，媒介还选择内容。媒介即隐喻。</p>
+
+<blockquote>
+  <p>写出《黄金时代》前，我从未觉得自己写得好。——王小波</p>
+
+  <p>完美一字不差。——《燕窝》，吴青峰</p>
+</blockquote>
+
+<p>所以最后，这本书的所有糟粕、推荐写法，归总下来就是这样一份 ESLint 规则了。学完忘掉，用上这份 rule。就是对我个人学习成果最大的效益了。</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="na">env</span><span class="p">:</span> <span class="p">{</span> <span class="na">es6</span><span class="p">:</span> <span class="kc">true</span> <span class="p">},</span>
+  <span class="na">plugins</span><span class="p">:</span> <span class="p">[</span><span class="dl">"</span><span class="s2">import</span><span class="dl">"</span><span class="p">],</span>
+  <span class="na">rules</span><span class="p">:</span> <span class="p">{</span>
+    <span class="c1">// variables</span>
+    <span class="dl">"</span><span class="s2">one-var</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">never</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-var</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-undef</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-shadow</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-plusplus</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-label-var</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-redeclare</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-undefined</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-unused-vars</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-multi-assign</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-use-before-define</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+
+    <span class="c1">// references</span>
+    <span class="dl">"</span><span class="s2">prefer-const</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-const-assign</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+
+    <span class="c1">// object</span>
+    <span class="dl">"</span><span class="s2">object-shorthand</span><span class="dl">"</span><span class="p">:</span> <span class="p">[</span><span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">always</span><span class="dl">"</span><span class="p">],</span>
+    <span class="dl">"</span><span class="s2">prefer-object-spread</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">dot-notation</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+
+    <span class="c1">// array</span>
+    <span class="dl">"</span><span class="s2">array-callback-return</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">prefer-destructuring</span><span class="dl">"</span><span class="p">:</span> <span class="p">[</span>
+      <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+      <span class="p">{</span>
+        <span class="na">array</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+        <span class="na">object</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+      <span class="p">},</span>
+      <span class="p">{</span> <span class="na">enforceForRenamedProperties</span><span class="p">:</span> <span class="kc">true</span> <span class="p">},</span>
+    <span class="p">],</span>
+
+    <span class="c1">// string templates</span>
+    <span class="dl">"</span><span class="s2">prefer-template</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-useless-concat</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">template-curly-spacing</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+
+    <span class="c1">// functions</span>
+    <span class="dl">"</span><span class="s2">no-loop-func</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-param-reassign</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">prefer-spread</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">prefer-rest-params</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">arrow-body-style</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">func-style</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-useless-call</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">consistent-return</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-extra-bind</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-invalid-this</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+
+    <span class="c1">// class</span>
+    <span class="dl">"</span><span class="s2">no-useless-constructor</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">lines-between-class-members</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-dupe-class-members</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-class-assign</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-this-before-super</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">new-parens</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">enforce-methods-use-this</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+
+    <span class="c1">// module</span>
+    <span class="dl">"</span><span class="s2">no-duplicate-imports</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">import/no-mutable-exports</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">import/first</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+
+    <span class="c1">// wrappers</span>
+    <span class="dl">"</span><span class="s2">no-new-object</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-array-constructor</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-new-wrappers</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-new-func</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+
+    <span class="c1">// comments</span>
+    <span class="dl">"</span><span class="s2">spaced-comment</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-inline-comments</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+
+    <span class="c1">// blocks</span>
+    <span class="dl">"</span><span class="s2">no-else-return</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-continue</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">default-case</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-unreachable</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+
+    <span class="c1">// types</span>
+    <span class="dl">"</span><span class="s2">valid-typeof</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+
+    <span class="c1">// programming styles</span>
+    <span class="dl">"</span><span class="s2">max-lines</span><span class="dl">"</span><span class="p">:</span> <span class="p">[</span>
+      <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+      <span class="p">{</span>
+        <span class="na">max</span><span class="p">:</span> <span class="mi">300</span><span class="p">,</span>
+        <span class="na">skipBlankLines</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+        <span class="na">skipComments</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+      <span class="p">},</span>
+    <span class="p">],</span>
+    <span class="dl">"</span><span class="s2">max-lines-per-function</span><span class="dl">"</span><span class="p">:</span> <span class="p">[</span>
+      <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+      <span class="p">{</span>
+        <span class="na">max</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+        <span class="na">skipBlankLines</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+        <span class="na">skipComments</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+        <span class="na">IIFEs</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+      <span class="p">},</span>
+    <span class="p">],</span>
+
+    <span class="c1">// misc</span>
+    <span class="na">eqeqeq</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="na">yoda</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-void</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-with</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-eval</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-caller</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-sequences</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-cond-assign</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-empty-return</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-implied-eval</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-global-assign</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-useless-escape</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-implicit-globals</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-unneeded-ternary</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">error</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-console</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">warning</span><span class="dl">"</span><span class="p">,</span>
+
+    <span class="c1">// basic prettier options</span>
+    <span class="na">semi</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="na">quotes</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">max-len</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">comma-dangle</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">arrow-parens</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+
+    <span class="c1">// prettier will handle this perfectly</span>
+    <span class="na">curly</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">wrap-iife</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">quote-props</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">brace-style</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">key-spacing</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">arrow-spacing</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">comma-spacing</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">space-infix-ops</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-multi-spaces</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">keyword-spacing</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-trailing-spaces</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">yield-star-spacing</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">rest-spread-spacing</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">switch-colon-spacing</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">array-bracket-spacing</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">generator-star-spacing</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">computed-property-spacing</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-nested-ternary</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-mixed-operators</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">space-before-blocks</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">prefer-arrow-callback</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">array-bracket-newline</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">array-element-newline</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">function-paren-newline</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="c1">// prettier is opinionated on this about having or not spaces before&amp;after functions.</span>
+    <span class="c1">// Stick to prettier to save your life on styling. It's not that bad.</span>
+    <span class="dl">"</span><span class="s2">space-before-function-paren</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">func-call-spacing</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+
+    <span class="c1">// still validating...</span>
+    <span class="na">camelcase</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-extend-native</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">implicit-arrow-linebreak</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">new-cap</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-underscore-dangle</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">no-prototype-builtins</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">off</span><span class="dl">"</span><span class="p">,</span>
+  <span class="p">},</span>
+<span class="p">}</span>
+</code></pre></div></div>

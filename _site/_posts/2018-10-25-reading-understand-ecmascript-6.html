@@ -1,0 +1,389 @@
+<p>本书拾遗部分的特性，要求 100% 熟练地应用到日常实践中；增广部分，除了讲道理，主要是开阔眼界。这部分知识可以预见是自己开发框架/库的强力武器，而不常见于日常业务代码中。</p>
+
+<h2 id="目录">目录</h2>
+
+<ul>
+  <li>导读</li>
+  <li>拾遗</li>
+  <li>增广</li>
+</ul>
+
+<h2 id="导读">导读</h2>
+
+<p>读完《JavaScript 语言精粹》，了解了理想中的 JavaScript 应该是什么样子。这本书，想读读现代的 JavaScript 应该怎么写。JS 功底日益扎实，这本书读完后，接下来个人方向会更专注于<strong>如何高效解决前端问题域的工程问题</strong>。因此，后续的《你不知道的 JavaScript》、《JavaScript 语言精髓与编程实践》两本原理书籍暂时就不是短期的阅读目标了，取而代之，会了解现代前端的常见工程问题，以及 React 到 16.7 为止的一些新特性。</p>
+
+<p>这个书应该分两个部分来读：工作常用部分和不常用部分。工作常用部分，如 ES6 的解构、箭头函数等常用特性；不常用部分，如 <code class="highlighter-rouge">Map</code>、<code class="highlighter-rouge">Set</code>、<code class="highlighter-rouge">generator</code> 等。因此，本书按目录来分阅读次序应该是这样：</p>
+
+<ul>
+  <li>工作常用部分：已经用得麻溜的，补充一下遗漏
+    <ul>
+      <li>第 1 章 块级作用域绑定</li>
+      <li>第 2 章 字符串和正则表达式</li>
+      <li>第 3 章 函数</li>
+      <li>第 4 章 扩展对象的功能性</li>
+      <li>第 5 章 结构：使数据访问更便捷</li>
+      <li>第 9 章 JavaScript 中的类</li>
+      <li>第 10 章 改进的数组功能</li>
+      <li>第 13 章 用模块封装代码</li>
+      <li>附录 A ECMAScript 6 中较小的改动</li>
+      <li>附录 B ECMAScript 7(2016)</li>
+      <li>索引 学英语</li>
+    </ul>
+  </li>
+  <li>工作不常用部分：日常少用到的，补充一下见闻
+    <ul>
+      <li>第 6 章 Symbol 和 Symbol 属性</li>
+      <li>第 7 章 Set 集合与 Map 集合</li>
+      <li>第 8 章 迭代器（Iterator）和生成器（Generator）</li>
+      <li>第 11 章 Promise 与异步编程</li>
+      <li>第 12 章 代理（Proxy）和反射（Reflection）API</li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="拾遗">拾遗</h2>
+
+<ul class="task-list">
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />第 1 章 块级作用域绑定</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />第 2 章 字符串和正则表达式</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />第 3 章 函数</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />第 4 章 扩展对象的功能性</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />第 5 章 解构：使数据访问更便捷</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />第 9 章 JavaScript 中的类</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />第 10 章 改进的数组功能</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />第 13 章 用模块封装代码</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />附录 A ECMAScript 6 中较小的改动</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />附录 B ECMAScript 7(2016)</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />索引 学英语</li>
+</ul>
+
+<h3 id="块级作用域绑定">块级作用域绑定</h3>
+
+<p>块级作用域，说白了就是达到跟正常编程语言一样的效果，修正现有 JS 中一些令人困惑的特性，包括：</p>
+
+<ul>
+  <li>没有块级作用域。这意味着，块中声明的变量会被直接提升到上一级的函数或全局作用域中，循环中的变量也会被提升到全局</li>
+  <li>在全局作用域（非函数作用域）中声明的变量会直接挂载到全局对象上(<code class="highlighter-rouge">window</code> / <code class="highlighter-rouge">global</code>)</li>
+  <li>会有经典的循环问题，贡献了许多面试题</li>
+</ul>
+
+<p>而 ES6 中新出的 <code class="highlighter-rouge">const</code> / <code class="highlighter-rouge">let</code> 声明就解决了这些问题。所以，最佳实践是：</p>
+
+<ul>
+  <li>不需要改变值的变量，一律用 <code class="highlighter-rouge">const</code> 声明</li>
+  <li>需要改变值的变量，一律用 <code class="highlighter-rouge">let</code> 声明</li>
+  <li>除非你在没有 <code class="highlighter-rouge">const</code>/<code class="highlighter-rouge">let</code> 的环境下工作（如兼容老版浏览器、写 babel 这种工具等），否则完全弃用 <code class="highlighter-rouge">var</code> 声明；</li>
+</ul>
+
+<h3 id="函数">函数</h3>
+
+<ul>
+  <li>使用参数解构替代类数组参数对象 <code class="highlighter-rouge">arguments</code> - 这可以通过 ESLint 规则固化</li>
+  <li><code class="highlighter-rouge">[function].name</code>：用做调试信息</li>
+  <li><code class="highlighter-rouge">new.target</code>：用以判断函数是否通过 <code class="highlighter-rouge">new</code> 方式被调用</li>
+  <li>箭头函数：JS 函数原本应该有的样子。<strong>所有非类方法的函数都应尽量使用箭头函数声明</strong>
+    <ul>
+      <li>修正了 this 指向：现在指向了最后一次调用它的有 <code class="highlighter-rouge">this</code> 指针的对象</li>
+      <li>没有 <code class="highlighter-rouge">this</code>、<code class="highlighter-rouge">super</code>、<code class="highlighter-rouge">arguments</code> 参数对象、<code class="highlighter-rouge">[[Constructor]]</code>、<code class="highlighter-rouge">prototype</code> 等一切函数以外、类范畴以内的东西。引擎可以针对箭头函数做优化</li>
+    </ul>
+  </li>
+  <li>规范了函数的尾调用优化</li>
+</ul>
+
+<h3 id="扩展对象的功能性">扩展对象的功能性</h3>
+
+<p>ES6 的其中一个设计目标是：不再创建新的全局函数，也不在 <code class="highlighter-rouge">Object.prototype</code> 创建新的（所有对象都能继承的）方法。但是 <code class="highlighter-rouge">Object</code> 上还是增加了一些静态的方法。</p>
+
+<ul>
+  <li>对象字面量语法扩展：每天都在用，应该成为日常再也不要回去了</li>
+  <li>对象属性枚举顺序：ES5 中未定义，由 JavaScript 引擎厂商自定实现，引起了混乱。ES6 中做了严格规定，这会影响一些方法获取对象属性的结果。但仍然无法保证对象属性的次序按你希望的方式进行。规范是：所有数字键升序排序 -&gt; 所有字符串键按加入次序排在后面 -&gt; 所有 Symbol 键按加入次序再排在后面</li>
+  <li><code class="highlighter-rouge">super</code> 关键字：对于获取基类中的同名属性有帮助。其他动态引用和多重继承的场景太复杂用不到</li>
+  <li>可计算属性名：据经验，一般是在 <code class="highlighter-rouge">reduce</code> 的时候用到。做一般业务时不推荐过度使用，其动态特性类似于反射，不好追溯</li>
+  <li>[无场景] <code class="highlighter-rouge">Object.is</code>：主要用来弥补 <code class="highlighter-rouge">===</code> 在处理 <code class="highlighter-rouge">+0 === -0</code> 和 <code class="highlighter-rouge">3 === NaN</code> 上的错误处理。如果你的代码不需要处理这两个特殊情况，一律用 <code class="highlighter-rouge">===</code> 就够了</li>
+  <li>[无场景] <code class="highlighter-rouge">Object.setPrototypeOf</code>：太过动态了吧，这样玩不会出事吗</li>
+  <li>[弃用] <code class="highlighter-rouge">Object.assign</code>：有副作用，应该一律用对象解构来替代</li>
+  <li>[弃用] 对象方法的简写语法：在对象上定义方法，一般都用类。这个特性我觉得不应该有使用场景</li>
+</ul>
+
+<h3 id="解构使数据访问更便捷">解构：使数据访问更便捷</h3>
+
+<p>这节内容我早已溜得飞起，因而也没什么惊喜。讲了对象和数组的解构、嵌套解构、解构变量重命名与默认值。混合解构以前少用，但也是理所当然地好用。可以说，解构特性极大程度地解决了数据获取和中间变量重命名的问题，使大多数代码都变得更加简洁了。不过据实际使用经验，四五个变量以内用解构还行，超过的就显得冗长了，特别是做字段转换/parser 的时候。</p>
+
+<h3 id="类">类</h3>
+
+<ul>
+  <li><a href="https://blog.linesh.tw/#/post/2018-10-18-javascript-prototypal-inheritance">JavaScript 原型继承之精髓</a></li>
+  <li><a href="https://blog.linesh.tw/#/post/2018-10-21-deep-dive-into-babel-inheritance">深入 JavaScript 原型继承原理——babel 编译码解读</a></li>
+</ul>
+
+<p>由于对 JavaScript 的原型继承原理已经整的几近完美，这节从内容上没有太多的惊喜。不过倒是提到了两个小细节：</p>
+
+<ul>
+  <li>可以利用 <code class="highlighter-rouge">extends Mixin</code> 模拟接口</li>
+  <li>可以利用 <code class="highlighter-rouge">new.target</code> 模拟抽象基类</li>
+</ul>
+
+<h3 id="改进的数组功能">改进的数组功能</h3>
+
+<p>加了几个新方法，主要是以前的 <code class="highlighter-rouge">Array()</code> 构造函数行为太灵活以至于易出 bug，因此加了一些实用方法来避免对构造函数的误用。它误就误在，其行为跟参数个数和类型是相关的，这就很烧脑，烧脑就容易出错：</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">fixedLength</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="nx">fixedLength</span><span class="p">.</span><span class="nx">length</span> <span class="c1">// 1</span>
+<span class="nx">fixedLength</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1">// undefined</span>
+
+<span class="kd">const</span> <span class="nx">populatedArray</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">(</span><span class="dl">'</span><span class="s1">1</span><span class="dl">'</span><span class="p">)</span>
+<span class="nx">populatedArray</span><span class="p">.</span><span class="nx">length</span> <span class="c1">// 1</span>
+<span class="nx">populatedArray</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1">// 1</span>
+
+<span class="kd">const</span> <span class="nx">array</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nx">array</span><span class="p">.</span><span class="nx">length</span> <span class="c1">// 2</span>
+<span class="nx">array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1">// 1</span>
+<span class="nx">array</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="c1">// 1</span>
+
+<span class="kd">const</span> <span class="nx">stillArray</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="dl">'</span><span class="s1">1</span><span class="dl">'</span><span class="p">)</span>
+<span class="nx">stillArray</span><span class="p">.</span><span class="nx">length</span> <span class="c1">// 2</span>
+<span class="nx">stillArray</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1">// 1</span>
+<span class="nx">stillArray</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="c1">// '1'</span>
+</code></pre></div></div>
+
+<ul>
+  <li><code class="highlighter-rouge">Array.from</code>。用于<strong>将一个类数组对象（或可迭代对象）转换成为数组</strong></li>
+  <li><code class="highlighter-rouge">Array(n)</code>。似乎构造函数本就只应该这么用，它会<strong>创建一个含有 n 个元素的数组</strong></li>
+  <li><code class="highlighter-rouge">Array.fill</code>。用于为数组填充值。一般与 <code class="highlighter-rouge">Array()</code> 配合起来用</li>
+  <li>[弃用] <code class="highlighter-rouge">Array.of</code>。修正了构造函数中的第一个令人困惑的场景，问题是后三个都是可以用字面量来生成的，这个函数显鸡肋</li>
+</ul>
+
+<h3 id="用模块封装代码">用模块封装代码</h3>
+
+<p>JS 没有模块，导致所有的变量都是全局的，这种方法自然无法应对日渐复杂的大型项目。都说全局变量是邪恶的，因为修改是在运行时发生，你没有办法预知一个变量是在何时被谁修改成了什么值，出了问题回溯极难。</p>
+
+<p>历史上有过很多方案来人为解决这个没有模块的问题，比如：</p>
+
+<ul>
+  <li>每个库使用自己的一个独一无二的全局变量</li>
+  <li>CommonJS</li>
+  <li>等</li>
+</ul>
+
+<p>ES6 的 <code class="highlighter-rouge">import</code> / <code class="highlighter-rouge">export</code> 实则是借鉴了以上各种优秀方案形成的内建模块化方案。服务端内容的导入导出感觉我早已玩溜，比如命名导出、默认导出、重命名导入导出、导入重命名等，这里就不再赘述。目前我看到的最佳实践是：</p>
+
+<ul>
+  <li><strong>尽量不要使用动态 <code class="highlighter-rouge">require</code>。这样方便搜引用点，方便回溯。动态反射难以回溯，搜不到应用点</strong></li>
+  <li><strong>日常写业务代码，一律使用命名导出。这样所有模块的引用都是静态的，方便重构，方便 IDE 自动导入</strong></li>
+  <li><strong>有朝一日写框架代码，考虑使用默认导出，因为 API 简洁，自动导入问题可使用 live template 解决</strong></li>
+  <li><strong>无导出模块</strong>说明一定修改了全局作用域上的东西。多用来做 <code class="highlighter-rouge">polyfill</code> 等，要很有节制地用</li>
+</ul>
+
+<p>浏览器端的导入导出会有一点区别。规范实际上只规定了模块之间如何解析，而下载和执行次序时机则未指定，由各厂商自行设定。在浏览器端的情况是，下载是由浏览器端决定的，但一般都是在下载完毕、文档加载完毕后，才会开始执行脚本（默认的 <code class="highlighter-rouge">&lt;script defer&gt;</code> 效果）。执行次序按照代码编写次序，除非你设定了 <code class="highlighter-rouge">async</code> 标签，则该脚本会在下载完毕后立即执行，而不会等待文档加载完成。</p>
+
+<h3 id="附录">附录</h3>
+
+<p>附录一起讲。主要是说，除了上面讲到的一些变化以外，还有一些微小的变化，值得注意的有：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">Math</code> 上多了一些实用的数学计算方法</li>
+  <li><code class="highlighter-rouge">__proto__</code> 被正式写入标准，但不鼓励开发者直接使用它</li>
+  <li><code class="highlighter-rouge">Array.prototype.includes()</code> 在 EcmaScript 2016 后加上（ES7）</li>
+</ul>
+
+<h2 id="增广">增广</h2>
+
+<ul class="task-list">
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />第 6 章 Symbol 和 Symbol 属性</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />第 7 章 Set 集合与 Map 集合</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />第 8 章 迭代器（Iterator）和生成器（Generator）</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />第 11 章 Promise 与异步编程</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />第 12 章 代理（Proxy）和反射（Reflection）API</li>
+</ul>
+
+<h3 id="symbol-和-symbol-属性">Symbol 和 Symbol 属性</h3>
+
+<p><strong>JS 中的第六种基本类型</strong>。它可以被用来做对象的属性名，可以用 <code class="highlighter-rouge">Symbol.for</code> 来创建全局共享的 symbol。不过跟下一章我们要讲到的 <code class="highlighter-rouge">Set</code> 和 <code class="highlighter-rouge">Map</code> 一样，它在你写业务代码过程应该极少有使用场景。其真正的价值，在于以其为媒介，将共享更多 JS 引擎内部实现的方法变得优雅，使开发者有了更多拦截、定制 JS 语言 API 内部实现的机会。举几个比较实用的例子：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><code class="highlighter-rouge">Symbol</code></th>
+      <th style="text-align: left">用途</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><code class="highlighter-rouge">Symbol.hasInstance</code></td>
+      <td style="text-align: left"><code class="highlighter-rouge">instanceof</code> 操作符的内部实现</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><code class="highlighter-rouge">Symbol.isConcatSpreadable</code></td>
+      <td style="text-align: left">影响 <code class="highlighter-rouge">Array.prototype.concat</code> 实现的规整方式</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><code class="highlighter-rouge">Symbol.iterator</code></td>
+      <td style="text-align: left">用于标识「可迭代对象」的迭代器接口</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><code class="highlighter-rouge">Symbol.species</code></td>
+      <td style="text-align: left">用于标识继承（派生）对象的返回类型</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><code class="highlighter-rouge">Symbol.toPrimitive</code></td>
+      <td style="text-align: left">发生原始值类型转换时的转换接口</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><code class="highlighter-rouge">Symbol.toStringTag</code></td>
+      <td style="text-align: left">用于在多个全局执行环境下标识对象</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>总而言之，这是一个业务日常应该很少用到，但是开发工具或框架，有自己的对象体系时将非常有用的特性。</p>
+
+<h3 id="set-集合与-map-集合">Set 集合与 Map 集合</h3>
+
+<p>集合，在 ES6 之前有两种：数组和对象。数组是一个有序元素的集合，其键为元素索引；对象是一个不保证顺序的键值对集合。在极端场景下，这两种集合有其毛病，最主要的场景是这两个：</p>
+
+<ul>
+  <li>存储的键值只能为字符串。用其他对象类型做键值时，通通会用 <code class="highlighter-rouge">toString</code> 过后的值作为键值</li>
+  <li>集合内部的相等性比较，用的是 <code class="highlighter-rouge">===</code> 而非更加严格的 <code class="highlighter-rouge">Object.is</code>，这在 <code class="highlighter-rouge">+0 === -0</code> 和 <code class="highlighter-rouge">NaN === NaN</code> 两个特例比较上会不一致</li>
+</ul>
+
+<p>但是，相等性比较的特例，一般业务代码很少会遇见；使用其他特定对象类型作为对象键值，一般业务代码也不是刚需。也就是说，这两个集合在写日常业务代码时，基本是没有场景的。此外，它们的 API 与一般的数组、对象也不一致，互操作性较差，尽管新的集合看上去有更好的性能表现。综上，对这两个新集合的结论如下：</p>
+
+<ul>
+  <li><strong>如果你不是在写框架代码，日常的业务代码中应该用不到 <code class="highlighter-rouge">Map</code> 或 <code class="highlighter-rouge">Set</code></strong></li>
+  <li><strong>使用特殊对象（如 <code class="highlighter-rouge">Symbol</code> <code class="highlighter-rouge">Promise</code> 等）作为键值，在框架或基础工具设计上可能有妙用</strong></li>
+  <li><code class="highlighter-rouge">WeakMap</code>/<code class="highlighter-rouge">WeakSet</code> 在解决闭包中私有变量及引用垃圾回收上是有作用的</li>
+</ul>
+
+<h3 id="迭代器iterator和生成器generator">迭代器（Iterator）和生成器（Generator）</h3>
+
+<p>迭代器解决的是个<strong>可自动化做声明式循环的问题</strong>，而生成器则有望依赖于其<strong>暂停特性</strong>实现更多其他的东西。在规范中称这俩为流程抽象，总结起来，唯在此两个方面可寻求挖掘其独特价值：<strong>可自动化的流程控制机</strong>，以及<strong>依赖暂停特性</strong>的特性。自动化是根本，从这个角度来看，知乎上的很多回答都不是非这俩不可的价值，包括似乎需要手动介入的所谓「懒求值」。在自动化的前提下是不存在场景的。</p>
+
+<p>多句嘴。看大部分的文章、资料，都是在讲这个东西是啥，都在抄别人的解释，都在翻译别人的文章，都在解析别人的源码。却没有仔细回答过这个东西价值是啥（当然，连价值都是抄别人的解释），自己都不去写源码。资料在精不在多。老写四五手的解释文章，能达到你想要的吸粉目的吗？老跟在别人屁股后面走，不行的，气象不够。中国人民一向是自力更生的。</p>
+
+<p><a href="https://blog.linesh.tw/#/post/2018-11-11-javascript-generator">JavaScript 生成器之精髓</a></p>
+
+<h3 id="promise-与异步编程">Promise 与异步编程</h3>
+
+<p>Promise 是第二版的异步问题解决方案。结合 ES6 的 generator，则可以产生当今最为完美的第三版异步解决方案：<code class="highlighter-rouge">async</code> / <code class="highlighter-rouge">await</code>。它解决了它的前任：回调函数无法很好解决的几个问题：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">前任回调函数的缺陷</th>
+      <th style="text-align: center">新的 <code class="highlighter-rouge">Promise</code> API</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">更明确的语义和 API</td>
+      <td style="text-align: center"><code class="highlighter-rouge">new Promise((resolve, reject) =&gt; {})</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: center">嵌套的回调会产生回调地狱</td>
+      <td style="text-align: center"><code class="highlighter-rouge">Promise.then().then().catch()</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: center">难以协调多个回调的结果</td>
+      <td style="text-align: center"><code class="highlighter-rouge">Promise.all</code> / <code class="highlighter-rouge">Promise.race</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>具体的知识点，是揉入以上几个解决方案中的。比如：</p>
+
+<ul>
+  <li>维护了三个内部状态 <code class="highlighter-rouge">[[pending]] / [[fulfilled]] / [[rejected]]</code></li>
+  <li>支持非 <code class="highlighter-rouge">Promise</code> 的 <code class="highlighter-rouge">resolve</code> 以支持链式调用，等</li>
+</ul>
+
+<h3 id="代理proxy和反射reflectionapi">代理（Proxy）和反射（Reflection）API</h3>
+
+<p>反射曾经是我非常感兴趣的一个话题，毕业设计就是深入研究 Java 反射机制。<strong>所谓反射，指的是一个运行时的程序，具备获取程序自身元信息、改变自身执行方式的能力</strong>。对于 Java 这门静态编译型语言来说，编译期它已经可以拥有类的注解、接口、继承关系等信息；其反射能力最突出的一点是，<strong>可以在运行时根据字符串动态创建类的实例对象</strong>。这是编译时的代码所做不到的。而 JS 的反射，与 Java 又有异同。</p>
+
+<p>由于 JS 中函数是一等公民，所以函数名这个东西，运行时是能拿到的，但是函数参数就不行了；又由于 JS 中有太过灵活的 <code class="highlighter-rouge">eval()</code> 函数，所以根据字符串名称生成对应类实例的事，变着法子也是能做的 <code class="highlighter-rouge">eval('new ' + className.toUpperCase() + '()')</code>，但反射 API 中是没有这部分的。这跟语言的编译方式、类型系统的设计有密切的关系。我的结论是，<strong>JavaScript 反射在获取程序元信息上的能力是比较弱的</strong>。</p>
+
+<p>ES6 的 <code class="highlighter-rouge">Proxy</code>/<code class="highlighter-rouge">Reflect</code> API，提供的主要是<strong>改变自身执行方式</strong>的能力。通过代理并提供拦截点，JS 向外暴露了若干个常用的、引擎内部的执行过程，以供开发者做行为定制，可拦截切面包括：<strong>字段存取</strong>、<strong>操作符覆盖</strong>、<strong>原型行为</strong>、<strong>函数调用</strong>等。这样说来，<code class="highlighter-rouge">Symbol</code> 上的一些常用方法，也是提供定制语言规范行为的拦截能力，归入反射能力部分也是妥当。</p>
+
+<p>严格来说，JS 的这种做法只是暴露了更多语言底层的实现接口，它确实向开发者开放了更多的能力和可能性，但并未暴露太多对程序元信息和执行流程的存取能力。<strong>将 JS 的反射称为元编程的说法没有根据，只是炒作和噱头</strong>。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">代理陷阱</th>
+      <th style="text-align: left">覆写的特性</th>
+      <th style="text-align: left">默认特性</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left">get</td>
+      <td style="text-align: left">获取一个对象属性值时</td>
+      <td style="text-align: left"><code class="highlighter-rouge">Reflect.get</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: left">set</td>
+      <td style="text-align: left">写入一个对象属性值时</td>
+      <td style="text-align: left"><code class="highlighter-rouge">Reflect.set</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: left">has</td>
+      <td style="text-align: left"><code class="highlighter-rouge">in</code> 操作符</td>
+      <td style="text-align: left"><code class="highlighter-rouge">Reflect.has</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: left">deleteProperty</td>
+      <td style="text-align: left"><code class="highlighter-rouge">delete</code> 操作符</td>
+      <td style="text-align: left"><code class="highlighter-rouge">Reflect.deleteProperty</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: left">getPrototypeOf</td>
+      <td style="text-align: left"><code class="highlighter-rouge">Object.getPrototypeOf</code></td>
+      <td style="text-align: left"><code class="highlighter-rouge">Reflect.getPrototypeOf</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: left">setPrototypeOf</td>
+      <td style="text-align: left"><code class="highlighter-rouge">Object.setPrototypeOf</code></td>
+      <td style="text-align: left"><code class="highlighter-rouge">Reflect.setPrototypeOf</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: left">isExtensible</td>
+      <td style="text-align: left"><code class="highlighter-rouge">Object.isExtensible</code></td>
+      <td style="text-align: left"><code class="highlighter-rouge">Reflect.isExtensible</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: left">preventExtensions</td>
+      <td style="text-align: left"><code class="highlighter-rouge">Object.preventExtensions</code></td>
+      <td style="text-align: left"><code class="highlighter-rouge">Reflect.preventExtensions</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: left">defineProperty</td>
+      <td style="text-align: left"><code class="highlighter-rouge">Object.defineProperty</code></td>
+      <td style="text-align: left"><code class="highlighter-rouge">Reflect.defineProperty</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ownKeys</td>
+      <td style="text-align: left"><code class="highlighter-rouge">Object.keys</code></td>
+      <td style="text-align: left"><code class="highlighter-rouge">Reflect.ownKeys</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: left"> </td>
+      <td style="text-align: left"><code class="highlighter-rouge">Object.getOwnPropertyNames</code></td>
+      <td style="text-align: left"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left"> </td>
+      <td style="text-align: left"><code class="highlighter-rouge">Object.getOwnPropertySymbols</code></td>
+      <td style="text-align: left"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">apply</td>
+      <td style="text-align: left">通过非构造函数方式调用函数时</td>
+      <td style="text-align: left"><code class="highlighter-rouge">Reflect.apply</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: left">constructor</td>
+      <td style="text-align: left">使用 <code class="highlighter-rouge">new</code> 操作符调用函数时</td>
+      <td style="text-align: left"><code class="highlighter-rouge">Reflect.constructor</code></td>
+    </tr>
+  </tbody>
+</table>

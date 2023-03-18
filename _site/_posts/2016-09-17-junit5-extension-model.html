@@ -1,0 +1,290 @@
+<p>「译」JUnit 5 系列：扩展模型（Extension Model）</p>
+
+<blockquote>
+  <p>原文地址：<a href="http://blog.codefx.org/design/architecture/junit-5-extension-model/">http://blog.codefx.org/design/architecture/junit-5-extension-model/</a><br />
+原文日期：11, Apr, 2016<br />
+译文首发：<a href="http://blog.linesh.tw/#/posts/2016-09-17-junit5-extension-model"> Linesh 的博客：「译」JUnit 5 系列：扩展模型（Extension Model）</a><br />
+我的 Github：<a href="http://github.com/linesh-simplicity">http://github.com/linesh-simplicity</a></p>
+</blockquote>
+
+<h2 id="概述">概述</h2>
+
+<ul>
+  <li><a href="http://blog.linesh.tw/#/posts/2016-09-17-junit5-setup">环境搭建</a></li>
+  <li><a href="http://blog.linesh.tw/#/posts/2016-09-17-junit5-basics">基础入门</a></li>
+  <li><a href="http://blog.linesh.tw/#/posts/2016-09-17-junit5-architecture">架构体系</a></li>
+  <li><a href="http://blog.linesh.tw/#/posts/2016-09-17-junit5-extension-model">扩展模型（Extension Model)</a></li>
+  <li><a href="http://blog.linesh.tw/#/posts/2016-09-17-junit5-conditions">条件断言</a></li>
+  <li>注入</li>
+  <li><a href="http://blog.linesh.tw/#/posts/2016-09-17-junit5-dynamic-tests">动态测试</a></li>
+  <li>…</li>
+</ul>
+
+<p>（如果不喜欢看文章，你可以<a href="http://blog.codefx.org/past-talks/">戳这里看我的演讲</a>，或者<a href="https://www.youtube.com/watch?v=ct9sIsrnE9Y">看一下最近的 vJUG 讲座</a>，或者<a href="https://www.youtube.com/watch?v=oG80XZUN1lQ">我在 DevoxxPL 上的 PPT</a>。</p>
+
+<p>本系列文章都基于 Junit 5发布的先行版 <a href="http://junit.org/junit5/docs/5.0.0-M2/user-guide/">Milestone 2</a>。它可能会有变化。如果有新的里程碑（milestone）版本发布，或者试用版正式发行时，我会再来更新这篇文章。</p>
+
+<p>这里要介绍的多数知识你都可以在 <a href="http://junit.org/junit5/docs/5.0.0-M2/user-guide/">JUnit 5 用户指南</a> 中找到（这个链接指向的是先行版 Milestone 2，想看的最新版本文档的话请戳<a href="http://junit.org/junit5/docs/current/user-guide/">这里</a>），并且指南还有更多的内容等待你发掘。下面的所有代码都可以在 <a href="https://github.com/CodeFX-org/demo-junit-5">我的 Github</a> 上找到。</p>
+
+<h2 id="目录">目录</h2>
+
+<ul>
+  <li>JUnit 4 的扩展模型
+    <ul>
+      <li>Runners（运行器）</li>
+      <li>Rules（规则）</li>
+      <li>现状</li>
+    </ul>
+  </li>
+  <li>JUnit 5 的扩展模型
+    <ul>
+      <li>扩展点</li>
+      <li>无状态</li>
+      <li>应用扩展</li>
+      <li>自定义注解</li>
+    </ul>
+  </li>
+  <li>例子</li>
+  <li>回顾总结</li>
+  <li>分享&amp;关注</li>
+</ul>
+
+<p>「译者注：本篇的 Runner，统一译为“运行器”；Rule，统一译为“规则”。虽不一定完全达义，但语义未损失太多。在每小节第一次出现处会以中英标注，其后全部使用中文。」</p>
+
+<h2 id="junit-4-的扩展模型">JUnit 4 的扩展模型</h2>
+
+<p>我们先来看看 JUnit 4 中是如何实现扩展的。在 JUnit 4 中实现扩展主要是通过两个，有时也互有重叠的扩展机制：运行器（Runners）和规则（Rules）。</p>
+
+<h3 id="运行器runners">运行器（Runners）</h3>
+
+<p><a href="https://github.com/junit-team/junit4/wiki/Test-runners">测试运行器</a>负责管理诸多测试的生命周期，包括它们的实例化、setup/teardown 方法的调用、测试运行、异常处理、发送消息等。在 JUnit 4 提供的运行器实现中，它负责了这所有的事情。</p>
+
+<p>在 JUnit 4 中，扩展 JUnit 的唯一方法是：创建一个新的运行器，然后使用它标记你新的测试类：<code class="highlighter-rouge">@Runwith(MyRunner.class)</code>。这样 JUnit 就会识别并使用它来运行测试，而不会使用其默认的实现。</p>
+
+<p>这个方式很重，对于小定制小扩展来说很不方便。同时它有个很苛刻的限制：一个测试类只能用一个运行器来跑，这意味着你不能组合不同的运行器。也即是说，你不能同时享受到两个以上运行器提供的特性，比如说不能同时使用 Mockito 和 Spring 的运行器，等。</p>
+
+<h3 id="规则rules">规则（Rules）</h3>
+
+<p>为了克服这个限制，JUnit 4.7 中引入了<a href="https://github.com/junit-team/junit4/wiki/Rules">规则</a>的概念，它是指测试类中特别的注解字段。 JUnit 4 会把测试方法（与一些其他的行为）包装一层传给规则。规则因此可以在测试代码执行前后插入，执行一些代码。很多时候在测试方法中也会直接调规则类上的方法。</p>
+
+<p>这里有一个例子，展示的是 <a href="http://junit.org/junit4/javadoc/latest/org/junit/rules/TemporaryFolder.html">temporary folder</a> （临时文件夹）规则：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">HasTempFolder</span> <span class="o">{</span>
+	<span class="nd">@Rule</span>
+	<span class="kd">public</span> <span class="nc">TemporaryFolder</span> <span class="n">folder</span><span class="o">=</span> <span class="k">new</span> <span class="nc">TemporaryFolder</span><span class="o">();</span>
+ 
+	<span class="nd">@Test</span>
+	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">testUsingTempFolder</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">IOException</span> <span class="o">{</span>
+		<span class="nc">File</span> <span class="n">createdFile</span><span class="o">=</span> <span class="n">folder</span><span class="o">.</span><span class="na">newFile</span><span class="o">(</span><span class="s">"myfile.txt"</span><span class="o">);</span>
+		<span class="nc">File</span> <span class="n">createdFolder</span><span class="o">=</span> <span class="n">folder</span><span class="o">.</span><span class="na">newFolder</span><span class="o">(</span><span class="s">"subfolder"</span><span class="o">);</span>
+		<span class="c1">// ...</span>
+	<span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>因为 <code class="highlighter-rouge">@Rule</code> 注解的存在，JUnit 会先把测试方法 <code class="highlighter-rouge">testUsingTempFolder</code> 包装成一个可执行代码块，传给 <code class="highlighter-rouge">folder</code> 规则。这个规则的作用是执行时， 由 <code class="highlighter-rouge">folder</code> 创建一个临时目录，执行测试，测试完成后删除临时目录。因此，在测试内部可以放心地在临时目录下创建文件和文件夹。</p>
+
+<p>当然还有其他的规则，比如允许你<a href="http://blog.schauderhaft.de/2010/08/15/use-cases-for-junit-rules/">在 Swing 的事件分发线程中执行测试</a> 的规则，负责连接和断开数据库的规则，以及<a href="http://junit.org/junit4/javadoc/latest/org/junit/rules/Timeout.html">让运行过久的测试直接超时</a>的规则等。</p>
+
+<p>规则特性其实已经是个很大的改进了，不过仍有局限，它只能在测试运行之前或之后定制操作。如果你想在此之外的时间点进行扩展，这个特性也无能为力了。</p>
+
+<h3 id="现状">现状</h3>
+
+<p>总而言之，在 JUnit 4 中存在两种不同的扩展机制，两者均各有局限，并且功能还有重叠的部分。在 JUnit 4 下编写干净的扩展是很难的事。此外，即使你尝试组合两种不同的扩展方式，通常也不会一帆风顺，有时它可能根本不按照开发者期望的方式工作。</p>
+
+<p><img src="http://7xqu8w.com1.z0.glb.clouddn.com/junit-5-extension-model.jpg" alt="" /></p>
+
+<h2 id="junit-5-的扩展模型">JUnit 5 的扩展模型</h2>
+
+<p>Junit Lambda 项目成立伊始便有几点<a href="https://github.com/junit-team/junit5/wiki/Core-Principles">核心准则</a>，其中一条便是“扩展点优于新特性”。这个准则其实也就是新版本 JUnit 中最重要的扩展机制了——并非唯一，但无疑是最重要之一。</p>
+
+<h3 id="扩展点">扩展点</h3>
+
+<p>JUnit 5 扩展可以声明其主要关注的是测试生命周期的哪部分。JUnit 5 引擎在处理测试时，它会依次检查这些扩展点，并调用每个已注册的扩展。大体来说，这些扩展点出现次序如下：</p>
+
+<ul>
+  <li>测试类实例 后处理</li>
+  <li>BeforeAll 回调</li>
+  <li>测试及容器执行条件检查</li>
+  <li>BeforeEach 回调</li>
+  <li>参数解析</li>
+  <li>测试执行前</li>
+  <li>测试执行后</li>
+  <li>异常处理</li>
+  <li>AfterEach 回调</li>
+  <li>AfterAll 回调</li>
+</ul>
+
+<p>（如果上面有你觉得不甚清晰或理解的点，请不用担心，我们接下来会挑其中的一些来讲解。）</p>
+
+<p>每个扩展点都对应一个接口。接口方法会接受一些参数，一些扩展点所处生命周期的上下文信息。比如，被测实例与方法、测试的名称、参数、注解等信息。</p>
+
+<p>一个扩展可以实现任意个以上的接口方法，引擎会在调用它们时传入相应的上下文信息作为参数。有了这些信息，扩展就可以放心地实现所需的功能了。</p>
+
+<h3 id="无状态">无状态</h3>
+
+<p>这里我们需要考虑一个重要的细节：引擎对扩展实例的初始化时间、实例的生存时间未作出任何规约和保证，因此，扩展必须是无状态的。如果一个扩展需要维持任何状态信息，那么它必须使用 JUnit 提供的一个<a href="http://junit.org/junit5/docs/5.0.0-M1/api/org/junit/jupiter/api/extension/ExtensionContext.Store.html">仓库（store）</a>来进行信息读取和写入。</p>
+
+<p>这样做的原因有几个：</p>
+
+<ul>
+  <li>扩展的初始化时机和方式对引擎是未知的（每个测试实例化一次？每个类实例化一次？还是每次运行实例化一次？）。</li>
+  <li>JUnit 不想额外维护和管理每个扩展创建的实例。</li>
+  <li>如果扩展之间想要进行通信，那么无论如何 JUnit 都必须提供一个数据交互的机制。</li>
+</ul>
+
+<h3 id="应用扩展">应用扩展</h3>
+
+<p>创建完扩展后，接下来需要做的就仅仅是告诉 JUnit 它的存在。这可以通过在需要使用该扩展的测试类或测试方法上添加一个 <code class="highlighter-rouge">@ExtendWith(MyExtension.class)</code> 简单实现。</p>
+
+<p>其实，还有另一种更简明的方式。不过要理解那种方式，我们必须先看一下 JUnit 的扩展模型中还有哪些内容。</p>
+
+<h3 id="自定义注解">自定义注解</h3>
+
+<p>JUnit 5 的 API 大部分是基于注解的，而且引擎在检查注解时还做了些额外的工作：它不仅会查找字段、类、参数上应用的注解，还会注解上的注解。引擎会把找到的所有注解都应用到被注解元素上。注解另一个注解可以通过所谓的<a href="https://en.wikibooks.org/wiki/Java_Programming/Annotations/Meta-Annotations">元注解</a>做到，酷的是 Junit 提供的所有注解都说得上是元注解了。</p>
+
+<p>它的意义在于，JUnit 5 中我们就能够创建并组合不同的注解了，并且它们具备组合多个注解特性的能力：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="cm">/**
+ * We define a custom annotation that:
+ * - stands in for '@Test' so that the method gets executed
+ * - has the tag "integration" so we can filter by that,
+ *   e.g. when running tests from the command line
+ */</span>
+<span class="nd">@Target</span><span class="o">({</span><span class="nc">ElementType</span><span class="o">.</span><span class="na">TYPE</span><span class="o">,</span> <span class="nc">ElementType</span><span class="o">.</span><span class="na">METHOD</span><span class="o">})</span>
+<span class="nd">@Retention</span><span class="o">(</span><span class="nc">RetentionPolicy</span><span class="o">.</span><span class="na">RUNTIME</span><span class="o">)</span>
+<span class="nd">@Test</span>
+<span class="nd">@Tag</span><span class="o">(</span><span class="s">"integration"</span><span class="o">)</span>
+<span class="kd">public</span> <span class="nd">@interface</span> <span class="nc">IntegrationTest</span> <span class="o">{</span> <span class="o">}</span>
+</code></pre></div></div>
+
+<p>这个自定义的“集成测试”注解 <code class="highlighter-rouge">@IntegrationTest</code> 可以这样使用：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@IntegrationTest</span>
+<span class="kt">void</span> <span class="nf">runsWithCustomAnnotation</span><span class="o">()</span> <span class="o">{</span>
+    <span class="c1">// this gets executed</span>
+    <span class="c1">// even though `@IntegrationTest` is not defined by JUnit</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>进一步我们可以为扩展使用更简明的注解：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Target</span><span class="o">({</span> <span class="nc">ElementType</span><span class="o">.</span><span class="na">TYPE</span><span class="o">,</span> <span class="nc">ElementType</span><span class="o">.</span><span class="na">METHOD</span><span class="o">,</span> <span class="nc">ElementType</span><span class="o">.</span><span class="na">ANNOTATION_TYPE</span> <span class="o">})</span>
+<span class="nd">@Retention</span><span class="o">(</span><span class="nc">RetentionPolicy</span><span class="o">.</span><span class="na">RUNTIME</span><span class="o">)</span>
+<span class="nd">@ExtendWith</span><span class="o">(</span><span class="nc">ExternalDatabaseExtension</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="nd">@interface</span> <span class="nc">Database</span> <span class="o">{</span> <span class="o">}</span>
+</code></pre></div></div>
+
+<p>现在我们可以直接使用 <code class="highlighter-rouge">@Database</code> 注解了，而不需要再声明测试应用了特定的扩展 <code class="highlighter-rouge">@ExtendWith(ExternalDatabaseExtension.class)</code>。并且由于我们把注解类型 <code class="highlighter-rouge">ElementType.ANNOTATION_TYPE</code> 也添加到扩展支持的目标类型中去了，因此该注解也可以被我们或他人进一步的使用、组合。</p>
+
+<h2 id="例子">例子</h2>
+
+<p>假设现在有个场景，我想量化一下测试运行花费的时间。首先，可以先创建一个我们想要的注解：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Target</span><span class="o">({</span> <span class="no">TYPE</span><span class="o">,</span> <span class="no">METHOD</span><span class="o">,</span> <span class="no">ANNOTATION_TYPE</span> <span class="o">})</span>
+<span class="nd">@Retention</span><span class="o">(</span><span class="nc">RetentionPolicy</span><span class="o">.</span><span class="na">RUNTIME</span><span class="o">)</span>
+<span class="nd">@ExtendWith</span><span class="o">(</span><span class="nc">BenchmarkExtension</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="nd">@interface</span> <span class="nc">Benchmark</span> <span class="o">{</span> <span class="o">}</span>
+</code></pre></div></div>
+
+<p>注解声明其应用了 <code class="highlighter-rouge">BenchmarkExtension</code> 扩展，这是我们接下来要实现的。TODOLIST 如下：</p>
+
+<ul>
+  <li>计算所有测试类的运行时间，在所有测试执行前保存其起始时间</li>
+  <li>计算每个测试方法的运行时间，在每个测试方法执行前保存其起始时间</li>
+  <li>在每个测试方法执行完毕后，获取其结束时间，计算并输出该测试方法的运行时间</li>
+  <li>在所有测试类执行完毕后，获取其结束时间，计算并输出所有测试的运行时间</li>
+  <li>以上操作，仅对所有注解了 <code class="highlighter-rouge">@BenchMark</code> 的测试类或测试方法生效</li>
+</ul>
+
+<p>最后一点需求可能不是一眼便能发现。如果一个方法并未注解 <code class="highlighter-rouge">@Benchmark</code> 注解，它有什么可能被我们的扩展处理？ 一个语法上的原因是，如果一个扩展被应用到了一个类上，那么它默认也会应用到类中的所有方法上。因此，如果我们的需求是计算整个测试类的运行时间，但不需具体到类中每个单独方法的运行时间时，类中的测试方法就必须被手动排除。这点我们可以通过单独检查每个方法是否应用了注解来做到。</p>
+
+<p>有趣的是，需求的前四点与扩展点中的其中四个是一一对应的：<em>BeforeAll</em>、<em>BeforeTestExecution</em>、<em>AfterTestExecution</em> 与 <em>AfterAll</em>。因此我们要做的任务便是实现这四个对应的接口。具体实现很简单，把上面说的翻译成代码即是：</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">BenchmarkExtension</span> <span class="kd">implements</span>
+		<span class="nc">BeforeAllExtensionPoint</span><span class="o">,</span> <span class="nc">BeforeTestExecutionCallback</span><span class="o">,</span>
+		<span class="nc">AfterTestExecutionCallback</span><span class="o">,</span> <span class="nc">AfterAllExtensionPoint</span> <span class="o">{</span>
+ 
+	<span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="nc">Namespace</span> <span class="no">NAMESPACE</span> <span class="o">=</span>
+			<span class="nc">Namespace</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="s">"BenchmarkExtension"</span><span class="o">);</span>
+ 
+	<span class="nd">@Override</span>
+	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">beforeAll</span><span class="o">(</span><span class="nc">ContainerExtensionContext</span> <span class="n">context</span><span class="o">)</span> <span class="o">{</span>
+		<span class="k">if</span> <span class="o">(!</span><span class="n">shouldBeBenchmarked</span><span class="o">(</span><span class="n">context</span><span class="o">))</span>
+			<span class="k">return</span><span class="o">;</span>
+ 
+		<span class="n">writeCurrentTime</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="nc">LaunchTimeKey</span><span class="o">.</span><span class="na">CLASS</span><span class="o">);</span>
+	<span class="o">}</span>
+ 
+	<span class="nd">@Override</span>
+	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">beforeTestExecution</span><span class="o">(</span><span class="nc">TestExtensionContext</span> <span class="n">context</span><span class="o">)</span> <span class="o">{</span>
+		<span class="k">if</span> <span class="o">(!</span><span class="n">shouldBeBenchmarked</span><span class="o">(</span><span class="n">context</span><span class="o">))</span>
+			<span class="k">return</span><span class="o">;</span>
+ 
+		<span class="n">writeCurrentTime</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="nc">LaunchTimeKey</span><span class="o">.</span><span class="na">TEST</span><span class="o">);</span>
+	<span class="o">}</span>
+ 
+	<span class="nd">@Override</span>
+	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">afterTestExecution</span><span class="o">(</span><span class="nc">TestExtensionContext</span> <span class="n">context</span><span class="o">)</span> <span class="o">{</span>
+		<span class="k">if</span> <span class="o">(!</span><span class="n">shouldBeBenchmarked</span><span class="o">(</span><span class="n">context</span><span class="o">))</span>
+			<span class="k">return</span><span class="o">;</span>
+ 
+		<span class="kt">long</span> <span class="n">launchTime</span> <span class="o">=</span> <span class="n">loadLaunchTime</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="nc">LaunchTimeKey</span><span class="o">.</span><span class="na">TEST</span><span class="o">);</span>
+		<span class="kt">long</span> <span class="n">runtime</span> <span class="o">=</span> <span class="n">currentTimeMillis</span><span class="o">()</span> <span class="o">-</span> <span class="n">launchTime</span><span class="o">;</span>
+		<span class="n">print</span><span class="o">(</span><span class="s">"Test"</span><span class="o">,</span> <span class="n">context</span><span class="o">.</span><span class="na">getDisplayName</span><span class="o">(),</span> <span class="n">runtime</span><span class="o">);</span>
+	<span class="o">}</span>
+ 
+	<span class="nd">@Override</span>
+	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">afterAll</span><span class="o">(</span><span class="nc">ContainerExtensionContext</span> <span class="n">context</span><span class="o">)</span> <span class="o">{</span>
+		<span class="k">if</span> <span class="o">(!</span><span class="n">shouldBeBenchmarked</span><span class="o">(</span><span class="n">context</span><span class="o">))</span>
+			<span class="k">return</span><span class="o">;</span>
+ 
+		<span class="kt">long</span> <span class="n">launchTime</span> <span class="o">=</span> <span class="n">loadLaunchTime</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="nc">LaunchTimeKey</span><span class="o">.</span><span class="na">CLASS</span><span class="o">);</span>
+		<span class="kt">long</span> <span class="n">runtime</span> <span class="o">=</span> <span class="n">currentTimeMillis</span><span class="o">()</span> <span class="o">-</span> <span class="n">launchTime</span><span class="o">;</span>
+		<span class="n">print</span><span class="o">(</span><span class="s">"Test container"</span><span class="o">,</span> <span class="n">context</span><span class="o">.</span><span class="na">getDisplayName</span><span class="o">(),</span> <span class="n">runtime</span><span class="o">);</span>
+	<span class="o">}</span>
+ 
+	<span class="kd">private</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">shouldBeBenchmarked</span><span class="o">(</span><span class="nc">ExtensionContext</span> <span class="n">context</span><span class="o">)</span> <span class="o">{</span>
+		<span class="k">return</span> <span class="n">context</span><span class="o">.</span><span class="na">getElement</span><span class="o">()</span>
+				<span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="n">el</span> <span class="o">-&gt;</span> <span class="n">el</span><span class="o">.</span><span class="na">isAnnotationPresent</span><span class="o">(</span><span class="nc">Benchmark</span><span class="o">.</span><span class="na">class</span><span class="o">))</span>
+				<span class="o">.</span><span class="na">orElse</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+	<span class="o">}</span>
+ 
+	<span class="kd">private</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">writeCurrentTime</span><span class="o">(</span>
+			<span class="nc">ExtensionContext</span> <span class="n">context</span><span class="o">,</span> <span class="nc">LaunchTimeKey</span> <span class="n">key</span><span class="o">)</span> <span class="o">{</span>
+		<span class="n">context</span><span class="o">.</span><span class="na">getStore</span><span class="o">(</span><span class="no">NAMESPACE</span><span class="o">).</span><span class="na">put</span><span class="o">(</span><span class="n">key</span><span class="o">,</span> <span class="n">currentTimeMillis</span><span class="o">());</span>
+	<span class="o">}</span>
+ 
+	<span class="kd">private</span> <span class="kd">static</span> <span class="kt">long</span> <span class="nf">loadLaunchTime</span><span class="o">(</span>
+			<span class="nc">ExtensionContext</span> <span class="n">context</span><span class="o">,</span> <span class="nc">LaunchTimeKey</span> <span class="n">key</span><span class="o">)</span> <span class="o">{</span>
+		<span class="k">return</span> <span class="o">(</span><span class="nc">Long</span><span class="o">)</span> <span class="n">context</span><span class="o">.</span><span class="na">getStore</span><span class="o">(</span><span class="no">NAMESPACE</span><span class="o">).</span><span class="na">remove</span><span class="o">(</span><span class="n">key</span><span class="o">);</span>
+	<span class="o">}</span>
+ 
+	<span class="kd">private</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">print</span><span class="o">(</span>
+			<span class="nc">String</span> <span class="n">unit</span><span class="o">,</span> <span class="nc">String</span> <span class="n">displayName</span><span class="o">,</span> <span class="kt">long</span> <span class="n">runtime</span><span class="o">)</span> <span class="o">{</span>
+		<span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">"%s '%s' took %d ms.%n"</span><span class="o">,</span> <span class="n">unit</span><span class="o">,</span> <span class="n">displayName</span><span class="o">,</span> <span class="n">runtime</span><span class="o">);</span>
+	<span class="o">}</span>
+ 
+	<span class="kd">private</span> <span class="kd">enum</span> <span class="nc">LaunchTimeKey</span> <span class="o">{</span>
+		<span class="no">CLASS</span><span class="o">,</span> <span class="no">TEST</span>
+	<span class="o">}</span>
+<span class="o">}</span>
+
+<span class="err">「译者：啊这代码让人心旷神怡。」</span>
+</code></pre></div></div>
+
+<p>上面代码有几个地方值得留意。首先是 <code class="highlighter-rouge">shouldBeBenchmarked</code> 方法，它使用了 JUnit 的 API 来获取当前元素是否（被元）注解了 <code class="highlighter-rouge">@Benchmark</code> 注解；其次， <code class="highlighter-rouge">writeCurrentTime</code> / <code class="highlighter-rouge">loadLaunchTime</code> 方法中使用了 Junit 提供的 store 以写入和读取运行时间。</p>
+
+<p><a href="https://github.com/CodeFX-org/demo-junit-5/tree/master/src/main/java/org/codefx/demo/junit5">源代码在 Github 上</a>可以找到。</p>
+
+<p>下篇博文我会探讨条件执行的测试以及参数注入部分的内容，同时为你展示如何使用其对应的扩展点。如果你已经迫不及待了，那么请先参考<a href="http://www.codeaffine.com/2016/04/06/replace-rules-in-junit5/">这篇博客</a>，它展示了将应用了两个规则（条件性禁用测试 及 临时目录）的 Junit 4 测试改装成 JUnit 5 测试的方法。</p>
+
+<h2 id="总结回顾">总结回顾</h2>
+
+<p>通过本文我们了解到，在创建整洁、强大及可组合的扩展上，JUnit 4 提供的运行器和规则特性不够理想。为了超越这些限制，JUnit 5 引入了一个更通用的概念：扩展点。它允许自定义的扩展主动声明，它需要在一个测试的什么节点上去介入。同时，我们还看到如何使用元注解来轻松地自定义注解。</p>
+
+<p>我希望听到你的想法和反馈。</p>
+
+<hr />
+

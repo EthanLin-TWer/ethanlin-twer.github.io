@@ -1,0 +1,61 @@
+<ul class="task-list">
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />should I use <code class="highlighter-rouge">await waitFor(() =&gt; {}, { timeout: 3000 })</code>?
+    <ul>
+      <li><code class="highlighter-rouge">waitFor</code> returns a promise, so you should always <code class="highlighter-rouge">await</code></li>
+    </ul>
+  </li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />what is <code class="highlighter-rouge">act()</code>? when should I use <code class="highlighter-rouge">act()</code>?
+    <ul>
+      <li>most functions RTL provides are already in <code class="highlighter-rouge">act()</code>: <code class="highlighter-rouge">render</code> / <code class="highlighter-rouge">fireEvent</code> / <code class="highlighter-rouge">userEvent</code>, so most of the time you don’t need to manually write <code class="highlighter-rouge">act()</code></li>
+      <li>you need to do this when you: 1) trigger multiple calls in an action; 2) there are other async actions happened outside of React’s stack, like <code class="highlighter-rouge">setTimeout</code>, <code class="highlighter-rouge">jest.mockTimer</code>, etc</li>
+      <li>you could also use <code class="highlighter-rouge">await screen.findByXXX</code> to allow some waiting for simple scenarios</li>
+      <li>you will then need <code class="highlighter-rouge">await waitForElementToBeRemoved()</code> to wait for some loading / modal / etc.. disappearing</li>
+      <li><a href="https://testing-library.com/docs/dom-testing-library/api-async/">all async methods are listed here</a></li>
+    </ul>
+  </li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />why should we use <code class="highlighter-rouge">await</code> for <code class="highlighter-rouge">screen.(get/find/query)By</code> function?
+    <ul>
+      <li>only <code class="highlighter-rouge">screen.findByXXX()</code> returns a promise that waits for the element to show up in 1s by default</li>
+    </ul>
+  </li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />difference of <code class="highlighter-rouge">getBy</code>, <code class="highlighter-rouge">queryBy</code> and <code class="highlighter-rouge">findBy</code>? when should I use which one?
+    <ul>
+      <li><code class="highlighter-rouge">query(All)By</code> is the only one that doesn’t throw exceptions on 0 matches, so it’s good for query absent elements</li>
+      <li><code class="highlighter-rouge">find(All)By</code> is the only one that returns a Promise, so it’s good to use it to wait for an element to show up after some synchronous update / state change, it comes with a default time out of 1000ms</li>
+      <li><code class="highlighter-rouge">get(All)By</code> throws exception and is synchronous, so it’s good to use it to get something you know it’s definitely going to exist</li>
+    </ul>
+  </li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />how to write good tests?
+    <ul>
+      <li>reiterates on the grounding principles: expressive, one assertion per test, short</li>
+      <li>run tests synchronously with <code class="highlighter-rouge">--runInBand</code> and <code class="highlighter-rouge">--maxWorkers=1</code> so you can write multiple <code class="highlighter-rouge">test()</code>s, one assertion each</li>
+      <li>only use <code class="highlighter-rouge">data-testid</code> to make tests stable: won’t fail when you adjust dom structure, move elements/components around</li>
+      <li>encapsulate RTL calls with another layer of helpers to make it expressive</li>
+      <li>customize jest testers/matchers?</li>
+      <li>testing strategy: what to mock? hook or API calls?</li>
+    </ul>
+  </li>
+  <li class="task-list-item">[?] examples?
+    <ul>
+      <li>simplest: CURD rendering: with mocking</li>
+      <li>simple: with design system like MUI: encapsulate selectors</li>
+      <li>medium: with one API call in rendering + clicking event: handled by <code class="highlighter-rouge">act()</code> by default, only <code class="highlighter-rouge">await screen.find</code> needed</li>
+      <li>complexer: triggers multiple API calls: explicit <code class="highlighter-rouge">act()</code> and/or <code class="highlighter-rouge">waitFor</code> <code class="highlighter-rouge">waitForElementToBeRemoved</code> needed</li>
+      <li>complexer: with async promise you need to wait in <code class="highlighter-rouge">renderHooks</code></li>
+      <li>complexer: with exception you want to test but it’s thrown in a promise in <code class="highlighter-rouge">renderHooks</code></li>
+      <li>complexest: with complex interaction like form / submit / validation</li>
+    </ul>
+  </li>
+  <li class="task-list-item">how <code class="highlighter-rouge">waitFor()</code> know when should it stop to wait if there are multiple mixed <code class="highlighter-rouge">screen.get</code> and <code class="highlighter-rouge">expect</code> calls inside?</li>
+  <li class="task-list-item">how about <code class="highlighter-rouge">act(() =&gt; {})</code>, <code class="highlighter-rouge">act(async () =&gt; { await })</code>, <code class="highlighter-rouge">await act(()) =&gt; {})</code> and <code class="highlighter-rouge">await act(async () =&gt; { await })</code></li>
+  <li class="task-list-item">how <code class="highlighter-rouge">waitFor()</code> … what?</li>
+</ul>
+
+<h2 id="referencing">Referencing</h2>
+
+<ul>
+  <li><a href="https://testing-library.com/docs/queries/about">React Testing Library - Query APIs</a></li>
+  <li><a href="https://testing-library.com/docs/guide-disappearance/">Appearance and Disappearance</a></li>
+  <li><a href="https://davidwcai.medium.com/react-testing-library-and-the-not-wrapped-in-act-errors-491a5629193b">React Testing Library and the “not wrapped in act” Errors</a></li>
+  <li><a href="https://plainenglish.io/blog/you-probably-dont-need-act-in-your-react-tests-2a0bcd2ad65c">You Probably Don’t Need act() in Your React Tests</a></li>
+</ul>

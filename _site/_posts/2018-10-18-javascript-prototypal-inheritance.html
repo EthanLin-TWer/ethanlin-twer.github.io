@@ -1,0 +1,308 @@
+<p>一篇文章让你搞清楚 JavaScript 继承的本质、<code class="highlighter-rouge">prototype</code>、<code class="highlighter-rouge">__proto__</code>、<code class="highlighter-rouge">constructor</code> 都是什么。</p>
+
+<p>很多小伙伴表示不明白 JavaScript 的继承，说是原型链，看起来又像类，究竟是原型还是类？各种 <code class="highlighter-rouge">prototype</code>、<code class="highlighter-rouge">__proto__</code>、<code class="highlighter-rouge">constructor</code> 内部变量更是傻傻搞不清楚。其实，只要明白继承的本质就很能理解，继承是为了代码复用。复用并不一定得通过类，JS 就采用了一种轻量简明的原型方案来实现。Java/C++ 等强类型语言中有类和对象的区别，但 JS 只有对象。它的原型也是对象。只要你完全抛开面向对象的继承思路来看 JS 的原型继承，你会发现它轻便但强大。</p>
+
+<h2 id="目录">目录</h2>
+
+<ul>
+  <li>继承方案的设计要求</li>
+  <li>被复用的对象：<code class="highlighter-rouge">prototype</code></li>
+  <li>优雅的 API：ES6 <code class="highlighter-rouge">class</code></li>
+  <li>简明的向上查找机制：<code class="highlighter-rouge">__proto__</code></li>
+  <li>构造函数又是个啥玩意儿</li>
+  <li>双链合璧：终极全图</li>
+  <li>总结</li>
+  <li>参考</li>
+</ul>
+
+<h2 id="继承方案的设计要求">继承方案的设计要求</h2>
+
+<p>前面我们讲，继承的本质是为了更好地实现代码复用。再仔细思考，可以发现，这里的「代码」指的一定是「数据+行为」的复用，也就是把一组数据和数据相关的行为进行封装。为什么呢？因为，如果只是复用行为，那么使用函数就足够了；而如果只是复用数据，这使用 JavaScript 对象就可以了：</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">parent</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="na">some</span><span class="p">:</span> <span class="dl">'</span><span class="s1">data</span><span class="dl">'</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="kd">const</span> <span class="nx">child</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="p">...</span><span class="nx">parent</span><span class="p">,</span>
+  <span class="na">uniq</span><span class="p">:</span> <span class="dl">'</span><span class="s1">data</span><span class="dl">'</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>因此，只有数据+行为（已经类似于一个「对象」的概念）的封装，才是继承技术所必须出现的地方。为了满足这样的代码复用，一个继承体系的设计需要支持什么需求呢？</p>
+
+<ul>
+  <li>存储公用的数据和函数</li>
+  <li>覆盖被继承对象数据或函数的能力</li>
+  <li>向上查找/调用被继承对象函数的数据或函数的能力</li>
+  <li>优雅的语法（API）</li>
+  <li>增加新成员的能力</li>
+  <li>支持私有数据</li>
+</ul>
+
+<p>「支持私有数据」，这个基本所有方案都没实现，此阶段我们可以不用纠结；而「增加新成员的能力」，基本所有的方案都能做到，也不再赘述，主要来看前四点。</p>
+
+<h2 id="被复用的对象prototype">被复用的对象：<code class="highlighter-rouge">prototype</code></h2>
+
+<p>JavaScript 的继承有多种实现方式，具体有哪些，推荐读者可阅读：<a href="https://book.douban.com/subject/3590768/">JavaScript 语言精粹</a>一书 和 <a href="https://github.com/mqyqingfeng/Blog/issues/16">这篇文章</a>。这里，我们直接看一版比较优秀的实现：</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">Animal</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">getName</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">name</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">Cat</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">age</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">Animal</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">name</span><span class="p">)</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">age</span> <span class="o">=</span> <span class="nx">age</span> <span class="o">||</span> <span class="mi">1</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">meow</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="s2">`</span><span class="p">${</span><span class="k">this</span><span class="p">.</span><span class="nx">getName</span><span class="p">()}</span><span class="s2">eowww~~~~~, I'm </span><span class="p">${</span><span class="k">this</span><span class="p">.</span><span class="nx">age</span><span class="p">}</span><span class="s2"> year(s) old`</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">const</span> <span class="nx">cat</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Cat</span><span class="p">(</span><span class="dl">'</span><span class="s1">Lily</span><span class="dl">'</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">cat</span><span class="p">.</span><span class="nx">meow</span><span class="p">())</span> <span class="c1">// 'Lilyeowww~~~~~, I'm 2 year(s) old'</span>
+</code></pre></div></div>
+
+<p>这个方案，具备增添新成员的能力、调用被继承对象函数的能力等。一个比较重大的缺陷是：对象的所有方法 <code class="highlighter-rouge">getName</code> <code class="highlighter-rouge">meow</code>，都会随每个实例生成一份新的拷贝。这显然不是优秀的设计方案，我们期望的结果是，继承自同一对象的子对象，其所有的方法都共享自同一个函数实例。</p>
+
+<p>怎么办呢？想法也很简单，就是把它们放到同一个地方去，并且还要跟这个「对象」关联起来。如此一想，用来生成这个「对象」的函数本身就是很好的地方。我们可以把它放在函数的任一一个变量上，比如：</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">Animal</span><span class="p">.</span><span class="nx">functions</span><span class="p">.</span><span class="nx">getName</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">name</span>
+<span class="p">}</span>
+<span class="nx">Cat</span><span class="p">.</span><span class="nx">functions</span><span class="p">.</span><span class="nx">meow</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="s2">`</span><span class="p">${</span><span class="k">this</span><span class="p">.</span><span class="nx">getName</span><span class="p">()}</span><span class="s2">eowww~~~~~, I'm </span><span class="p">${</span><span class="k">this</span><span class="p">.</span><span class="nx">age</span><span class="p">}</span><span class="s2"> year(s) old`</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>但这样调用起来，你就要写 <code class="highlighter-rouge">animal.functions.getName()</code>，并不方便。不要怕，JavaScript 这门语言本身已经帮你内置了这样的支持。它内部所用来存储公共函数的变量，就是你熟知的 <code class="highlighter-rouge">prototype</code>。当你调用对象上的方法时（如 <code class="highlighter-rouge">cat.getName()</code>），它会自动去 <code class="highlighter-rouge">Cat.prototype</code> 上去帮你找 <code class="highlighter-rouge">getName</code> 函数，而你只需要写 <code class="highlighter-rouge">cat.getName()</code> 即可。兼具了功能的实现和语法的优雅。</p>
+
+<p>最后写出来的代码会是这样：</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">Animal</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span>
+<span class="p">}</span>
+<span class="nx">Animal</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">getName</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">name</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">Cat</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">age</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">Animal</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">name</span><span class="p">)</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">age</span> <span class="o">=</span> <span class="nx">age</span> <span class="o">||</span> <span class="mi">1</span>
+<span class="p">}</span>
+<span class="nx">Cat</span><span class="p">.</span><span class="nx">prototype</span> <span class="o">=</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="nx">Animal</span><span class="p">.</span><span class="nx">prototype</span><span class="p">,</span> <span class="p">{</span> <span class="na">constructor</span><span class="p">:</span> <span class="nx">Cat</span> <span class="p">})</span>
+<span class="nx">Cat</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">meow</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="s2">`</span><span class="p">${</span><span class="k">this</span><span class="p">.</span><span class="nx">getName</span><span class="p">()}</span><span class="s2">eowww~~~~~, I'm </span><span class="p">${</span><span class="k">this</span><span class="p">.</span><span class="nx">age</span><span class="p">}</span><span class="s2"> year(s) old`</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>请注意，<strong>只有函数才有 <code class="highlighter-rouge">prototype</code> 属性</strong>，它是用来做原型继承的必需品。</p>
+
+<h2 id="优雅的-apies6-class">优雅的 API：ES6 <code class="highlighter-rouge">class</code></h2>
+
+<p>然鹅，上面这个写法仍然并不优雅。在何处呢？一个是 <code class="highlighter-rouge">prototype</code> 这种暴露语言实现机制的关键词；一个是要命的是，这个函数内部的 <code class="highlighter-rouge">this</code>，依靠的是作为使用者的你记得使用 <code class="highlighter-rouge">new</code> 操作符去调用它才能得到正确的初始化。但是这里没有任何线索告诉你，应该使用 <code class="highlighter-rouge">new</code> 去调用这个函数，一旦你忘记了，也不会有任何编译期和运行期的错误信息。这样的语言特性，与其说是一个「继承方案」，不如说是一个 bug，一个不应出现的设计失误。</p>
+
+<p>而这两个问题，在 ES6 提供的 <code class="highlighter-rouge">class</code> 关键词下，已经得到了非常妥善的解决，尽管它叫一个 class，但本质上其实是通过 prototype 实现的：</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="nx">Animal</span> <span class="p">{</span>
+  <span class="kd">constructor</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span>
+  <span class="p">}</span>
+
+  <span class="nx">getName</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">name</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">class</span> <span class="nx">Cat</span> <span class="kd">extends</span> <span class="nx">Animal</span> <span class="p">{</span>
+  <span class="kd">constructor</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">age</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">super</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">age</span> <span class="o">=</span> <span class="nx">age</span> <span class="o">||</span> <span class="mi">1</span>
+  <span class="p">}</span>
+
+  <span class="nx">meow</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="s2">`</span><span class="p">${</span><span class="k">this</span><span class="p">.</span><span class="nx">getName</span><span class="p">()}</span><span class="s2">eowww~~~~~, I'm </span><span class="p">${</span><span class="k">this</span><span class="p">.</span><span class="nx">age</span><span class="p">}</span><span class="s2"> year(s) old`</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<ul>
+  <li>如果你没有使用 <code class="highlighter-rouge">new</code> 操作符，编译器和运行时都会直接报错。为什么呢，我们将在<a href="https://blog.linesh.tw/#/post/2018-10-21-deep-dive-into-babel-inheritance">下一篇文章</a>讲解</li>
+  <li><code class="highlighter-rouge">extends</code> 关键字，会使解释器直接在底下完成基于原型的继承功能</li>
+</ul>
+
+<p>现在，我们已经看到了一套比较完美的继承 API，也看到其底下使用 <code class="highlighter-rouge">prototype</code> 存储公共变量的地点和原理。接下来，我们要解决另外一个问题：<code class="highlighter-rouge">prototype</code> 有了，实例对象应该如何访问到它呢？这就关系到 JavaScript 的向上查找机制了。</p>
+
+<h2 id="简明的向上查找机制__proto__">简明的向上查找机制：<code class="highlighter-rouge">__proto__</code></h2>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">Animal</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span>
+<span class="p">}</span>
+<span class="nx">Animal</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">say</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">name</span>
+<span class="p">}</span>
+<span class="kd">const</span> <span class="nx">cat</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Animal</span><span class="p">(</span><span class="dl">'</span><span class="s1">kitty</span><span class="dl">'</span><span class="p">)</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">cat</span><span class="p">)</span> <span class="c1">// Animal { name: 'kitty' }</span>
+<span class="nx">cat</span><span class="p">.</span><span class="nx">hasOwnProperty</span><span class="p">(</span><span class="dl">'</span><span class="s1">say</span><span class="dl">'</span><span class="p">)</span> <span class="c1">// false</span>
+</code></pre></div></div>
+
+<p>看上面 👆 一个最简单的例子。打出来的 <code class="highlighter-rouge">cat</code> 对象本身并没有 <code class="highlighter-rouge">say</code> 方法。那么，被实例化的 <code class="highlighter-rouge">cat</code> 对象本身，是怎样向上查找到 <code class="highlighter-rouge">Animal.prototype</code> 上的 <code class="highlighter-rouge">say</code> 方法的呢？如果你是 JavaScript 引擎的设计者，你会怎样来实现呢？</p>
+
+<p>我拍脑袋这么一想，有几种方案：</p>
+
+<ul>
+  <li>在 <code class="highlighter-rouge">Animal</code> 中初始化实例对象 <code class="highlighter-rouge">cat</code> 时，顺便存取一个指向 <code class="highlighter-rouge">Animal.prototype</code> 的引用</li>
+  <li>在 <code class="highlighter-rouge">Animal</code> 中初始化实例对象时，记录其「类型」（也即是 <code class="highlighter-rouge">Animal</code>）</li>
+</ul>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// 方案1</span>
+<span class="kd">function</span> <span class="nx">Animal</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span>
+  <span class="c1">// 以下代码由引擎自动加入</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">__prototype__</span> <span class="o">=</span> <span class="nx">Animal</span><span class="p">.</span><span class="nx">prototype</span>
+<span class="p">}</span>
+
+<span class="kd">const</span> <span class="nx">cat</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Animal</span><span class="p">(</span><span class="dl">'</span><span class="s1">kitty</span><span class="dl">'</span><span class="p">)</span>
+<span class="nx">cat</span><span class="p">.</span><span class="nx">say</span><span class="p">()</span> <span class="c1">// -&gt; cat.__prototype__.say()</span>
+
+<span class="c1">// 方案2</span>
+<span class="kd">function</span> <span class="nx">Animal</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span>
+  <span class="c1">// 以下代码由引擎自动加入</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">__type__</span> <span class="o">=</span> <span class="nx">Animal</span>
+<span class="p">}</span>
+
+<span class="kd">const</span> <span class="nx">cat</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Animal</span><span class="p">(</span><span class="dl">'</span><span class="s1">kitty</span><span class="dl">'</span><span class="p">)</span>
+<span class="nx">cat</span><span class="p">.</span><span class="nx">say</span><span class="p">()</span> <span class="c1">// -&gt; cat.__type__.prototype.say()</span>
+</code></pre></div></div>
+
+<p>究其实质，其实就是：<strong>实例对象需要一个指向其函数的引用（变量）</strong>，以拿到这个公共原型 <code class="highlighter-rouge">prototype</code> 来实现继承方案的向上查找能力。读者如果有其他方案，不妨留言讨论。</p>
+
+<p>无独有偶，这两种方案，在 JavaScript 中都有实现，只不过变量的命名与我们的取法有所差异：第一种方案中，实际的变量名叫 <code class="highlighter-rouge">__proto__</code> 而不是 <code class="highlighter-rouge">__prototype__</code>；第二种方案中，实际的变量名叫 <code class="highlighter-rouge">constructor</code>，不叫<del>俗气的</del> <code class="highlighter-rouge">__type__</code>。实际上，用来实现继承、做向上查找的这个引用，正是 <code class="highlighter-rouge">__proto__</code>；至于 constructor，则另有他用。不过要注意的是，[尽管基本所有浏览器都支持 <code class="highlighter-rouge">__proto__</code>][mdn <code class="highlighter-rouge">__proto__</code>]，它并不是规范的一部分，因此并不推荐在你的业务代码中直接使用 <code class="highlighter-rouge">__proto__</code> 这个变量。</p>
+
+<p><img src="https://user-images.githubusercontent.com/11895199/47256895-7a423e00-d4b9-11e8-93a7-076259912244.png" alt="JavaScript Prototypal Inheritance" /></p>
+
+<p>从上图可以清楚看到，<code class="highlighter-rouge">prototype</code> 是用来存储类型公共方法的一个对象（正因此每个类型有它基本的方法），而 <code class="highlighter-rouge">__proto__</code> 是用来实现向上查找的一个引用。任何对象都会有 <code class="highlighter-rouge">__proto__</code>。<code class="highlighter-rouge">Object.prototype</code> 的 <code class="highlighter-rouge">__proto__</code> 是 null，也即是原型链的终点。</p>
+
+<h2 id="构造函数又是个啥玩意儿">构造函数又是个啥玩意儿？</h2>
+
+<p>再加入 constructor 这个东西，它与 <code class="highlighter-rouge">prototype</code>、<code class="highlighter-rouge">__proto__</code> 是什么关系？这个地方，说复杂就很复杂了，让我们尽量把它说简单一些。开始之前，我们需要查阅一下[语言规范][ecmascript 2015(es6) specification]，看一些基本的定义：</p>
+
+<ul>
+  <li><a href="https://www.ecma-international.org/ecma-262/6.0/#sec-terms-and-definitions-object">对象</a>：<a href="https://www.ecma-international.org/ecma-262/6.0/#sec-ecmascript-overview">对象是一组集合，其中可包含零个或多个属性。对象都有一个原型对象（译者注：即 [[Prototype]]/<code class="highlighter-rouge">__proto__</code>）</a></li>
+  <li>函数：<a href="https://www.ecma-international.org/ecma-262/6.0/#sec-terms-and-definitions-function">是对象类型的一员</a></li>
+  <li>构造函数：<a href="https://www.ecma-international.org/ecma-262/6.0/#sec-constructor">构造函数是个用于创建对象的<strong>函数对象</strong>。每个构造函数都有一个 <code class="highlighter-rouge">prototype</code> 对象，用以实现原型式继承，作属性共享用</a></li>
+</ul>
+
+<p>这里说明了什么呢？说明了构造函数是函数，它比普通函数多一个 <code class="highlighter-rouge">prototype</code> 属性；而函数是对象，对象都有一个原型对象 <code class="highlighter-rouge">__proto__</code>。这个东西有什么作用呢？</p>
+
+<p>上节我们深挖了用于继承的原型链，它链接的是原型对象。而对象是通过构造函数生成的，也就是说，普通对象、原型对象、函数对象都将有它们的构造函数，这将为我们引出另一条链——</p>
+
+<p><img src="https://user-images.githubusercontent.com/11895199/47259006-082c2200-d4d6-11e8-8abb-460b51719c50.png" alt="JavaScript Constructor Chain" /></p>
+
+<p>在 JavaScript 中，谁是谁的构造函数，是通过 <code class="highlighter-rouge">constructor</code> 来标识的。正常来讲，普通对象（如图中的 <code class="highlighter-rouge">cat</code> 和 <code class="highlighter-rouge">{ name: 'Lin' }</code> 对象）是没有 <code class="highlighter-rouge">constructor</code> 属性的，它是从原型上继承而来；而图中粉红色的部分即是函数对象（如 <code class="highlighter-rouge">Cat</code> <code class="highlighter-rouge">Animal</code> <code class="highlighter-rouge">Object</code> 等），它们的原型对象是 <code class="highlighter-rouge">Function.prototype</code>，这没毛病。关键是，它们是函数对象，对象就有构造函数，那么函数的构造函数是啥呢？是 <code class="highlighter-rouge">Function</code>。那么问题又来了，<code class="highlighter-rouge">Function</code> 也是函数，它的构造函数是谁呢？<strong>是它自己</strong>：<code class="highlighter-rouge">Function.constructor === Function</code>。由此，<code class="highlighter-rouge">Function</code> 即是构造函数链的终结。</p>
+
+<p>上面我们提到，<code class="highlighter-rouge">constructor</code> 也可以用来实现原型链的向上查找，然后它却别有他用。有个啥用呢？一般认为，它是用以支撑 <code class="highlighter-rouge">instanceof</code> 关键字实现的数据结构。</p>
+
+<h2 id="双链合璧终极全图">双链合璧：终极全图</h2>
+
+<p>好了，是时候进入最烧脑的部分了。前面我们讲了两条链：</p>
+
+<ul>
+  <li>原型链。它用来实现原型继承，最上层是 <code class="highlighter-rouge">Object.prototype</code>，终结于 <code class="highlighter-rouge">null</code>，没有循环</li>
+  <li>构造函数链。它用来表明构造关系，最上层循环终结于 <code class="highlighter-rouge">Function</code></li>
+</ul>
+
+<p>把这两条链结合到一起，你就会看到<del>一条双螺旋 DNA</del>这几张你经常看到却又看不懂的图：</p>
+
+<p><a href="https://juejin.im/post/5b729c24f265da280f3ad010"><img src="https://user-gold-cdn.xitu.io/2018/8/14/16537b65ee56f6f5?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" alt="constructor/prototype/proto" /></a></p>
+
+<p><a href="http://www.mollypages.org/tutorials/js.mp"><img src="http://www.mollypages.org/tutorials/jsobj_full.jpg" alt="constructor/prototype/proto" /></a></p>
+
+<p>图都是引用自其它文章，点击图片可跳转到原文。其中，第一篇文章 [一张图理解 JS 的原型][] 是我见过解析得最详细的，本文的很多灵感也来自这篇文章。</p>
+
+<p>理解了上面两条链以后，这两个全图实际上就不难理解了。分享一下，怎么来读懂这个图：</p>
+
+<ul>
+  <li>首先看构造函数链。所有的普通对象，<code class="highlighter-rouge">constructor</code> 都会指向它们的构造函数；而构造函数也是对象，它们最终会一级一级上溯到 <code class="highlighter-rouge">Function</code> 这个构造函数。<code class="highlighter-rouge">Function</code> 的构造函数是它自己，也即此链的终结；</li>
+  <li><code class="highlighter-rouge">Function</code> 的 <code class="highlighter-rouge">prototype</code> 是 <code class="highlighter-rouge">Function.prototype</code>，它是个普通的原型对象；</li>
+  <li>其次看原型链。所有的普通对象，<code class="highlighter-rouge">__proto__</code> 都会指向其构造函数的原型对象 <code class="highlighter-rouge">[Class].prototype</code>；而所有原型对象，包括构造函数链的终点 <code class="highlighter-rouge">Function.prototype</code>，都会最终上溯到 <code class="highlighter-rouge">Object.prototype</code>，终结于 null。</li>
+</ul>
+
+<p>也即是说，构造函数链的终点 <code class="highlighter-rouge">Function</code>，其原型又融入到了原型链中：<code class="highlighter-rouge">Function.prototype -&gt; Object.prototype -&gt; null</code>，最终抵达原型链的终点 <code class="highlighter-rouge">null</code>。至此这两条契合到了一起。</p>
+
+<p>总结下来，可以概括成这几句话：</p>
+
+<ul>
+  <li>JS 世界的变量除了普通类型外都是对象，包括函数也是对象</li>
+  <li>所有对象都必须由函数生成，包括普通对象、原型对象及函数对象</li>
+  <li>所有函数最终都生成自 <code class="highlighter-rouge">Function</code>，包括 <code class="highlighter-rouge">Function</code> 自己</li>
+  <li>所有对象最终都继承自 <code class="highlighter-rouge">Object.prototype</code>，包括 <code class="highlighter-rouge">Function.prototype</code>，终止于 <code class="highlighter-rouge">null</code></li>
+</ul>
+
+<p>这里还有最后一个所谓「鸡生蛋还是蛋生🐔」的问题：是先有 <code class="highlighter-rouge">Object.prorotype</code>，还是先有 <code class="highlighter-rouge">Function</code>？如果先有前者，那么此时 <code class="highlighter-rouge">Function</code> 还不在，这个对象又是由谁创建呢？如果先有后者，那么 <code class="highlighter-rouge">Function</code> 也是个对象，它的原型 <code class="highlighter-rouge">Function.prototype.__proto__</code> 从哪去继承呢？这个问题，看似无解。但从 [这篇文章：从__proto__和prototype来深入理解JS对象和原型链][从__proto__和 prototype 来深入理解 JS 对象和原型链] 中，我们发现了一个合理的解释，那就是：</p>
+
+<blockquote>
+  <p><code class="highlighter-rouge">Object.prototype</code> 是个神之对象。它不由 <code class="highlighter-rouge">Function</code> 这个函数构造产生。</p>
+</blockquote>
+
+<p>证据如下：</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">Object</span><span class="p">.</span><span class="nx">prototype</span> <span class="k">instanceof</span> <span class="nb">Object</span>                <span class="c1">// false</span>
+<span class="nb">Object</span><span class="p">.</span><span class="nx">prototype</span> <span class="k">instanceof</span> <span class="nb">Function</span>              <span class="c1">// false</span>
+<span class="nb">Object</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">__proto__</span> <span class="o">===</span> <span class="nb">Function</span><span class="p">.</span><span class="nx">prototype</span> <span class="c1">// false</span>
+</code></pre></div></div>
+
+<p>JS 对象世界的构造次序应该是：<code class="highlighter-rouge">Object.prototype</code> -&gt; <code class="highlighter-rouge">Function.prototype</code> -&gt; <code class="highlighter-rouge">Function</code> -&gt; <code class="highlighter-rouge">Object</code> -&gt; …</p>
+
+<h2 id="总结">总结</h2>
+
+<p>讲到这里，我想关于 JavaScript 继承中的一些基本问题可以解释清楚了：</p>
+
+<blockquote>
+  <p>JavaScript 继承是类继承还是原型继承？不是使用了 new 关键字么，应该跟类有关系吧？</p>
+</blockquote>
+
+<p>是完全的原型继承。尽管用了 <code class="highlighter-rouge">new</code> 关键字，但其实只是个语法糖，跟类没有关系。JavaScript 没有类。它与类继承完全不同，只是长得像。好比雷锋和雷峰塔的关系。</p>
+
+<blockquote>
+  <p><code class="highlighter-rouge">prototype</code> 是什么东西？用来干啥？</p>
+</blockquote>
+
+<p><code class="highlighter-rouge">prototype</code> 是个对象，只有函数上有。它是用来存储对象的属性（数据和方法）的地方，是实现 JavaScript 原型继承的基础。</p>
+
+<blockquote>
+  <p><code class="highlighter-rouge">__proto__</code> 是什么东西？用来干啥？</p>
+</blockquote>
+
+<p><code class="highlighter-rouge">__proto__</code> 是个指向 <code class="highlighter-rouge">prototype</code> 的引用。用以辅助原型继承中向上查找的实现。虽然它得到了所有浏览器的支持，但并不是规范所推荐的做法。严谨地说，它是一个指向 <code class="highlighter-rouge">[[Prototype]]</code> 的引用。</p>
+
+<blockquote>
+  <p><code class="highlighter-rouge">constructor</code> 是什么东西？用来干啥？</p>
+</blockquote>
+
+<p>是对象上一个指向构造函数的引用。用来辅助 <code class="highlighter-rouge">instanceof</code> 等关键字的实现。</p>
+
+<blockquote>
+  <p>🐔生蛋还是蛋生🐔？</p>
+</blockquote>
+
+<p>神生鸡，鸡生蛋。</p>
+
+<h2 id="参考">参考</h2>
+
+<ul>
+  <li><a href="https://juejin.im/post/5b729c24f265da280f3ad010">一张图理解 JS 的原型</a></li>
+  <li><a href="http://crockford.com/javascript/prototypal.html">Prototypal Inheritance in JavaScript</a></li>
+  <li><a href="http://blog.vjeux.com/2011/javascript/how-prototypal-inheritance-really-works.html">How Prototypal Inheritance really works</a></li>
+  <li><a href="https://www.ecma-international.org/ecma-262/6.0/">ECMAScript 2015(ES6) Specification</a></li>
+  <li><a href="https://github.com/creeperyang/blog/issues/9">从__proto__和 prototype 来深入理解 JS 对象和原型链</a></li>
+  <li><a href="https://github.com/mqyqingfeng/Blog/issues/16">JavaScript 深入之继承的多种方法</a></li>
+  <li><a href="https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Objects/Inheritance">MDN: Inheritance in JavaScript</a></li>
+  <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain">MDN: Inheritance and the prototype chain</a></li>
+  <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Details_of_the_Object_Model">MDN: Details of the object model</a></li>
+  <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/proto">MDN: <code class="highlighter-rouge">__proto__</code></a></li>
+</ul>
+

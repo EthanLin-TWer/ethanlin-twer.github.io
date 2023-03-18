@@ -1,0 +1,925 @@
+<p>本篇是我Mac优雅工具集系列下其中的一篇文章，<a href="https://linesh.gitbooks.io/gitbook-elegant-mac-tools-system-closure/content/index.html">原文全文</a>托管在Gitbook上，分享了Mac系统下一些使工作变得更高效的工具。</p>
+
+<blockquote>
+  <p>在线的精简cheatsheet备查表：<a href="http://intellij.linesh.tw">intellij.linesh.tw</a><br />
+Github项目：<a href="https://github.com/linesh-simplicity/intellij-mac-frequent-keymap">intellij-mac-frequent-keymap</a></p>
+</blockquote>
+
+<h1 id="intellij-cheatsheet成吨提高java编程开发效率">Intellij Cheatsheet：成吨提高Java编程开发效率</h1>
+
+<p>Intellij的快捷键多而繁杂，处女座的我这一年里，拉拉杂杂也阅读了大量的文档和资料，从<a href="https://resources.jetbrains.com/assets/products/intellij-idea/IntelliJIDEA_ReferenceCard_mac.pdf">官方推荐的keymap</a>到市面能看到的大多数资料和总结。结合平时的工作和个人项目经验，我尝试整理并总结其中最精华的部分，并通过这个子集总结思考与提高效率相关的思维模式和理念。于是有了这篇博客。总的来说，它讲了两个内容：</p>
+
+<ul>
+  <li>快捷背后的理念与思维模式</li>
+  <li>一套精简的Intellij快捷键核心子集</li>
+</ul>
+
+<p>产出的价值大概有这么几方面：</p>
+
+<ul>
+  <li>一个<a href="http://intellij.linesh.tw">在线的cheatsheet备查表</a></li>
+  <li>总结了高效快捷键的一个精简子集，节省了阅读其他杂而价值不高的快捷键的时间与精力</li>
+  <li>总结了快捷背后的两个思维模式的转变：<strong>更高层级的抽象</strong> 和 <strong>声明式使用</strong></li>
+</ul>
+
+<h2 id="理念与思维模式">理念与思维模式</h2>
+
+<p>IDE与电脑作为工具，永远是高效完成特定工作的辅助。因此我们所谓的高效有了上下文：以完成工作为主，在这个过程工具的作用是辅助工作。那么，所谓高效也即是问，如何更专注于工作本身，更高效地完成工作呢？在一系列落地的快捷键背后，这个围绕快捷键所展开的工作系统，其实质性提高工作效率的理念和思维模式本身是什么呢？我的回答是：</p>
+
+<ul>
+  <li>更高层次的抽象</li>
+  <li>声明式使用</li>
+</ul>
+
+<h3 id="更高层次的抽象">更高层次的抽象</h3>
+
+<p>更高层次的抽象，指的是从代码、从语言本身特性的层面思考编程，而非单纯的文本或者字符串。要把思维从“把这五行代码剪切并复制到一个新的方法里”等把代码当成无意义字符的低层面活动，转变到以作为语言核心的要素和特性为单位的思考，比如类、变量、方法、重命名、重构、if-else、循环、可循环元素等。</p>
+
+<p>在这方面，IDE提供的 <strong>Live Template</strong>、<strong>重构(Refactoring)</strong>、部分后向声明等，都是这种思想的产物，允许你从更高的层级（语言特性、与Java高相关的重构）来思考代码，并尽量多地向上屏蔽细节。</p>
+
+<h3 id="声明式使用">声明式使用</h3>
+
+<p>声明式使用，指的是直接使用你完成工作所需要的元素（类、字段、方法等），让IDE为你自动补全缺少的声明或定义。这种思想同样贯穿这本工具集的始终，以更语义化（更高阶）的操作来使用工具。</p>
+
+<p>在这方面，IDE提供的 <strong>后向声明(Postfix Auto Completion)</strong>、<strong>自动补全(Auto Completion)</strong> 等，都是这种思想的产物。你不需要关注操作所在的上下文，IDE会为你补全，你需要关注的是工作和操作本身。</p>
+
+<h2 id="快捷键精简子集">快捷键精简子集</h2>
+
+<p>本节主要分七个部分展开总结：生产力大杀器、语言要素生成、编辑、导航、重构、搜索、运行时。版本控制的部分未录入，原因是我倾向于使用命令行提交，而非IDE内置VCS支持。见仁见智。最后一栏是该操作在IDEA中的操作名称，可以在keymap中检索对应的action/shortcut找到。</p>
+
+<h3 id="生产力productivity">生产力（Productivity）</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Operation</th>
+      <th style="text-align: center">Mac OSX 10.5+</th>
+      <th style="text-align: center">Comments</th>
+      <th style="text-align: left">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left">模板补全</td>
+      <td style="text-align: center">⌘+J</td>
+      <td style="text-align: center">插入一个符合某结构特征的模板，详解见下</td>
+      <td style="text-align: left">Insert live template</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">命令查询</td>
+      <td style="text-align: center">⇧+⌘+S</td>
+      <td style="text-align: center">以名称的形式查询某个操作或快捷键，是声明式编程思想的完美体现</td>
+      <td style="text-align: left">Find actions</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">意图预测与智能帮助</td>
+      <td style="text-align: center">⌥+Enter</td>
+      <td style="text-align: center">简单重构、移除死代码、结构调整、自动导包等</td>
+      <td style="text-align: left">Show intention actions</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4 id="模板补全live-template">模板补全（Live Template）</h4>
+
+<p>敲完以下模板补全的keyword之后可以直接通过tab或回车触发模板补全，$1/$2…是需要你填充的模板变量。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">Operation</th>
+      <th style="text-align: center">Mac OSX 10.5+ Keyword</th>
+      <th style="text-align: center">Expands to</th>
+      <th style="text-align: center">Comments</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">判空</td>
+      <td style="text-align: center"><code class="highlighter-rouge">ifn</code></td>
+      <td style="text-align: center"><code class="highlighter-rouge">if ($1 == null) {}</code></td>
+      <td style="text-align: center">后向声明也有同样功能，读者可拣顺手的用</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">判非空</td>
+      <td style="text-align: center"><code class="highlighter-rouge">inn</code></td>
+      <td style="text-align: center"><code class="highlighter-rouge">if ($1 != null) {}</code></td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">创建索引循环</td>
+      <td style="text-align: center"><code class="highlighter-rouge">fori</code></td>
+      <td style="text-align: center"><code class="highlighter-rouge">for (int $1 = 0; $1 &lt; $2; $1++) {}</code></td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">添加TODO</td>
+      <td style="text-align: center"><code class="highlighter-rouge">todo</code></td>
+      <td style="text-align: center"><code class="highlighter-rouge">// TODO: $1</code></td>
+      <td style="text-align: center">非常声明式的用法</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">添加Fixme</td>
+      <td style="text-align: center"><code class="highlighter-rouge">fixme</code></td>
+      <td style="text-align: center"><code class="highlighter-rouge">// FIXME: 7/19/16 $1</code></td>
+      <td style="text-align: center">同上</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">类型关系判定</td>
+      <td style="text-align: center"><code class="highlighter-rouge">inst</code></td>
+      <td style="text-align: center"><code class="highlighter-rouge">if ($1 instanceof $2) {} </code></td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">System.out</td>
+      <td style="text-align: center"><code class="highlighter-rouge">sout</code></td>
+      <td style="text-align: center"><code class="highlighter-rouge">System.out.println($1); </code></td>
+      <td style="text-align: center">必须入手的黑技能，调试打log的时候非常有用</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4 id="后向声明postfix-completion">后向声明（Postfix Completion）</h4>
+
+<p><a href="https://blog.jetbrains.com/idea/2014/03/postfix-completion">后向声明</a>是JetBrains系IDE的一项新功能，旨在减少光标经常性的前后移动，提高开发效率，形成这样的编程思维：先使用元素，再考虑变量声明或结构补全。它的主要功能是根据当前元素的属性，提供可能的行为建议，例如使用if-else结构包围、判（非）空、格式化、进行类型转换等。因此，后向声明所能提供的选择视元素（主要是变量）的不同而不同。</p>
+
+<p>所有元素都拥有的一些后向声明选择，仅选择我认为常用的：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">Operation</th>
+      <th style="text-align: center">Postfix Completion Keyword</th>
+      <th style="text-align: center">Expands To</th>
+      <th style="text-align: center">Comments</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">变量声明</td>
+      <td style="text-align: center">element.<code class="highlighter-rouge">var</code></td>
+      <td style="text-align: center"><code class="highlighter-rouge">Type $name = element;</code></td>
+      <td style="text-align: center">必备技能，声明式使用的典范</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">转换为类字段</td>
+      <td style="text-align: center">element.<code class="highlighter-rouge">field</code></td>
+      <td style="text-align: center"><code class="highlighter-rouge">private $Type element; </code></td>
+      <td style="text-align: center">刚发现的</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">将当前变量打印到输出流</td>
+      <td style="text-align: center">element.<code class="highlighter-rouge">sout</code></td>
+      <td style="text-align: center"><code class="highlighter-rouge">System.out.println(element);</code></td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">返回当前值</td>
+      <td style="text-align: center">element.<code class="highlighter-rouge">return</code></td>
+      <td style="text-align: center"><code class="highlighter-rouge">return element;</code></td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">类型转换</td>
+      <td style="text-align: center">element.<code class="highlighter-rouge">cast</code></td>
+      <td style="text-align: center"><code class="highlighter-rouge">(($Type) element)</code></td>
+      <td style="text-align: center"> </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>然后，对于特定的元素类型，有的后向声明还有非常实用的选项，比如字符串的判空、布尔值的if-else、列表的循环等等：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">ElementType</th>
+      <th style="text-align: center">Operation</th>
+      <th style="text-align: center">Postfix Completion Keyword</th>
+      <th style="text-align: center">Expands To</th>
+      <th style="text-align: center">Comments</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left">字符串</td>
+      <td style="text-align: center">判空</td>
+      <td style="text-align: center">string.<code class="highlighter-rouge">null</code></td>
+      <td style="text-align: center"><code class="highlighter-rouge">if (string == null) {}</code></td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left"> </td>
+      <td style="text-align: center">判非空</td>
+      <td style="text-align: center">string.<code class="highlighter-rouge">notnull</code></td>
+      <td style="text-align: center"><code class="highlighter-rouge">if (string != null) {}</code></td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">整数</td>
+      <td style="text-align: center">分支</td>
+      <td style="text-align: center">int.<code class="highlighter-rouge">switch</code></td>
+      <td style="text-align: center"><code class="highlighter-rouge">switch (int) {}</code></td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">布尔值</td>
+      <td style="text-align: center">如果为真</td>
+      <td style="text-align: center">boolean.<code class="highlighter-rouge">if</code></td>
+      <td style="text-align: center"><code class="highlighter-rouge">if (boolean) {}</code></td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left"> </td>
+      <td style="text-align: center">如果为假</td>
+      <td style="text-align: center">boolean.<code class="highlighter-rouge">else</code></td>
+      <td style="text-align: center"><code class="highlighter-rouge">if (!boolean) {}</code></td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left"> </td>
+      <td style="text-align: center">反义</td>
+      <td style="text-align: center">boolean.<code class="highlighter-rouge">not</code></td>
+      <td style="text-align: center"><code class="highlighter-rouge">!boolean</code></td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">列表</td>
+      <td style="text-align: center">循环元素</td>
+      <td style="text-align: center">lists.<code class="highlighter-rouge">for</code></td>
+      <td style="text-align: center"><code class="highlighter-rouge">for (Type element : lists) {}</code></td>
+      <td style="text-align: center">非常常用</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"> </td>
+      <td style="text-align: center">带索引循环</td>
+      <td style="text-align: center">lists.<code class="highlighter-rouge">fori</code></td>
+      <td style="text-align: center"><code class="highlighter-rouge">for (int i = 0; i &lt; lists.size(); i++) {}</code></td>
+      <td style="text-align: center"> </td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="编辑editing">编辑（Editing）</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">Operation</th>
+      <th style="text-align: center">Mac OSX 10.5+</th>
+      <th style="text-align: center">Comments</th>
+      <th style="text-align: left">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">基本代码补全</td>
+      <td style="text-align: center">^+Space</td>
+      <td style="text-align: center">一般都用这个补全，变量命名时及方法补全时常用</td>
+      <td style="text-align: left">Code/Completion/Basic</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">智能补全</td>
+      <td style="text-align: center">^+⇧+Space</td>
+      <td style="text-align: center">是否有必要记得两个快捷键？可以统一设成一个</td>
+      <td style="text-align: left">Code/Completion/SmartType</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">语句补全</td>
+      <td style="text-align: center">⇧+⌘+Enter</td>
+      <td style="text-align: center">直接补全当前语句，在括号特别多时非常有用</td>
+      <td style="text-align: left">Complete Current Statement</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">从上方开始一行</td>
+      <td style="text-align: center">⌥+⌘+Enter</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Start New Line Before Current</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">从下方开始一行</td>
+      <td style="text-align: center">⇧+Enter</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Start New Line</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">上移/下移一行</td>
+      <td style="text-align: center">⇧+⌥+↑/↓</td>
+      <td style="text-align: center">上下移一行。一般用于以单行出现的元素，否则会破坏元素间的关系</td>
+      <td style="text-align: left">Move Line Up/Down</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">上移/下移一个块</td>
+      <td style="text-align: center">⇧+⌘+↑/↓</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Move Statement Up/Down</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">选中一个代码块</td>
+      <td style="text-align: center">⌥+↑</td>
+      <td style="text-align: center">常用</td>
+      <td style="text-align: left">Extend Selection</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">取消代码块选中</td>
+      <td style="text-align: center">⌥+↓</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Shrink Selection</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">重复当前行</td>
+      <td style="text-align: center">⌘+D</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Duplicate Current Line or Block</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">复制并且不删除当前行</td>
+      <td style="text-align: center">⌘+C</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Edit/Copy</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">剪切当前行并复制到粘贴板</td>
+      <td style="text-align: center">⌘+X</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Edit/Cut</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">关闭当前标签</td>
+      <td style="text-align: center">⌘+W</td>
+      <td style="text-align: center">跟通常编辑器快捷键一致</td>
+      <td style="text-align: left">Edit Tabs/Close</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">注释当前行</td>
+      <td style="text-align: center">⌘+/</td>
+      <td style="text-align: center">随手一注释</td>
+      <td style="text-align: left">Comment with Line Comment</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">优化import</td>
+      <td style="text-align: center">^+⌥+O</td>
+      <td style="text-align: center">没啥用</td>
+      <td style="text-align: left">Optimize Imports</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">格式化代码</td>
+      <td style="text-align: center">⌥+⌘+L</td>
+      <td style="text-align: center">没啥用</td>
+      <td style="text-align: left">Reformat Code</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="语言要素生成language-elementsfeatures">语言要素生成（Language Elements/Features）</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Operation</th>
+      <th style="text-align: center">Mac OSX 10.5+</th>
+      <th style="text-align: center">Comments</th>
+      <th style="text-align: left">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left">测试、方法生成</td>
+      <td style="text-align: center">^+Enter/ ⌘+N</td>
+      <td style="text-align: center">非常常用于创建测试方法、构造方法、覆写接口方法、覆写基类方法</td>
+      <td style="text-align: left">Code/Generate</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">创建类、文件、目录</td>
+      <td style="text-align: center">⌘+N</td>
+      <td style="text-align: center">常用</td>
+      <td style="text-align: left">Code/Generate</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">创建override方法</td>
+      <td style="text-align: center">^+O</td>
+      <td style="text-align: center">有用</td>
+      <td style="text-align: left">Override Methods</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">创建接口方法实现</td>
+      <td style="text-align: center">^+I</td>
+      <td style="text-align: center">有用</td>
+      <td style="text-align: left">Implement Methods</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="导航navigation">导航（Navigation）</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">Operation</th>
+      <th style="text-align: center">Mac OSX 10.5+</th>
+      <th style="text-align: center">Comments</th>
+      <th style="text-align: left">Description</th>
+      <th> </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">转到方法/字段的声明</td>
+      <td style="text-align: center">⌘+B</td>
+      <td style="text-align: center">调试跟代码都很常用</td>
+      <td style="text-align: left">Navigation/Declaration</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">转到方法/字段的实现点</td>
+      <td style="text-align: center">⌥+⌘+B</td>
+      <td style="text-align: center">同上，常用</td>
+      <td style="text-align: left">Navigation/Implementation(s)</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">转到方法/字段类型的类定义处</td>
+      <td style="text-align: center">⇧+⌘+B/ ⇧+^+B</td>
+      <td style="text-align: center">常由下两个快捷键取代</td>
+      <td style="text-align: left">Navigation/Type Declaration</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">当前类与单元测试间跳转</td>
+      <td style="text-align: center">⇧+⌘+T</td>
+      <td style="text-align: center">非常方便</td>
+      <td style="text-align: left">Navigate/Test</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left"> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">跳转到当前类的基类</td>
+      <td style="text-align: center">⌘+U</td>
+      <td style="text-align: center">配套食用，效果更佳</td>
+      <td style="text-align: left">Super Method</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">类继承体系</td>
+      <td style="text-align: center">^+H</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Type Hierarchy</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">方法继承层次</td>
+      <td style="text-align: center">⇧+⌘+H</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Method Hierarchy</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">当前方法调用链</td>
+      <td style="text-align: center">^+⌥+H</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Call Hierarchy</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">本类及所有基类方法列表</td>
+      <td style="text-align: center">⌘+F12</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">File Structure</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left"> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">类/方法/字段定义的快速预览</td>
+      <td style="text-align: center">⌥+Space/ ⌘+Y</td>
+      <td style="text-align: center">小览实现，一般可以看到方法/字段参数、返回值、前几行实现，快速的信息足够了</td>
+      <td style="text-align: left">Quick Definition</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">方法文档快速预览</td>
+      <td style="text-align: center">^+J</td>
+      <td style="text-align: center">看文档，我不常用</td>
+      <td style="text-align: left">Quick Documentation</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">方法参数快速预览</td>
+      <td style="text-align: center">⌘+P</td>
+      <td style="text-align: center">常用</td>
+      <td style="text-align: left">Parameter Info</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left"> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">前一个标签</td>
+      <td style="text-align: center">⇧+⌘+[</td>
+      <td style="text-align: center">导航常用，不过是否能以其他方式取代，比如声明式使用类查找⌘+O等。仍在探索</td>
+      <td style="text-align: left">Select Previous Tab</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">后一个标签</td>
+      <td style="text-align: center">⇧+⌘+]</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Select Next Tab</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">往上一级</td>
+      <td style="text-align: center">⌥+⌘+←/ ⌘+[</td>
+      <td style="text-align: center">调代码，跟方法体系时，非常有用，下同</td>
+      <td style="text-align: left">Navigate/Back</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">往下一级</td>
+      <td style="text-align: center">⌥+⌘+→/ ⌘+]</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Navigate/Forward</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left"> </td>
+      <td></td>
+    </tr>
+    <tr>
+      <td style="text-align: center">转到下一个错误或警告</td>
+      <td style="text-align: center">F2</td>
+      <td style="text-align: center">代码见红时，常用此快捷键快速定位，并配合万能快捷键⌥+Enter快速修复</td>
+      <td style="text-align: left">Next Highlighted Error</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">提示错误信息</td>
+      <td style="text-align: center">⌘+F1</td>
+      <td style="text-align: center">不常用</td>
+      <td style="text-align: left">Error Description</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">意图预测与智能帮助</td>
+      <td style="text-align: center">⌥+Enter</td>
+      <td style="text-align: center">简单重构、移除死代码、结构调整、自动导包等</td>
+      <td style="text-align: left">Show intention actions</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left"> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">project视图</td>
+      <td style="text-align: center">⌘+1</td>
+      <td style="text-align: center">有时导航项目结构时常用，不知是否有替代方案</td>
+      <td style="text-align: left">Other/Project</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">search/find视图</td>
+      <td style="text-align: center">⌘+3</td>
+      <td style="text-align: center">除了这几个，其他视图都不常用</td>
+      <td style="text-align: left">Other/Find</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">run视图</td>
+      <td style="text-align: center">⌘+4</td>
+      <td style="text-align: center">有时开关测试视图</td>
+      <td style="text-align: left">Other/Run</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">debug视图</td>
+      <td style="text-align: center">⌘+5</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Other/Debug</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">VCS视图</td>
+      <td style="text-align: center">⌘+9</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Other/VCS</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">terminal视图</td>
+      <td style="text-align: center">* ⌘+0</td>
+      <td style="text-align: center">自己改过，一是和各种视图快捷键保持一致，另外是原生的⌘+F12实在有点难按</td>
+      <td style="text-align: left">Other/Terminal</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">隐藏所有工具视图</td>
+      <td style="text-align: center">⇧+⌘+F12</td>
+      <td style="text-align: center">同时开了工程和终端视图时一键回编程页面</td>
+      <td style="text-align: left">Hide All Tool Windows</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left"> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">跳转到第…行</td>
+      <td style="text-align: center">⌘+L</td>
+      <td style="text-align: center">属于细节型的活，能少用就多思考替代方案</td>
+      <td style="text-align: left">Navigate/Line…</td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="重构refactor">重构（Refactor）</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">Operation</th>
+      <th style="text-align: center">Mac OSX 10.5+</th>
+      <th style="text-align: center">Comments</th>
+      <th style="text-align: left">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">复制类/目录等</td>
+      <td style="text-align: center">F5</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Refactor/Copy</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">移动类/目录等</td>
+      <td style="text-align: center">F6</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Refactor/Move</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">元素(类/方法/变量/…)重命名</td>
+      <td style="text-align: center">⇧+F6</td>
+      <td style="text-align: center">最常用的重构快捷键之一了吧</td>
+      <td style="text-align: left">Refactor/Rename</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">类/方法签名修改</td>
+      <td style="text-align: center">⌘+F6</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Refactor/Change Signature</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">字段(类级别)抽取</td>
+      <td style="text-align: center">⌥+⌘+F</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Extract/Field</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">常量(类级别)抽取</td>
+      <td style="text-align: center">⌥+⌘+C</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Extract/Constant</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">变量(方法级别)抽取</td>
+      <td style="text-align: center">⌥+⌘+V</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Extract/Variable</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">参数(方法级别)抽取</td>
+      <td style="text-align: center">⌥+⌘+P</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Extract/Parameter</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">方法抽取</td>
+      <td style="text-align: center">⌥+⌘+M</td>
+      <td style="text-align: center">最常用的重构快捷键之一</td>
+      <td style="text-align: left">Extract/Method</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">方法内联</td>
+      <td style="text-align: center">⌥+⌘+N</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Refactor/Inline</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="搜索searching">搜索（Searching)</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">Operation</th>
+      <th style="text-align: center">Mac OSX 10.5+</th>
+      <th style="text-align: center">Comments</th>
+      <th style="text-align: left">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">搜索</td>
+      <td style="text-align: center">⌘+F</td>
+      <td style="text-align: center">通常快捷键</td>
+      <td style="text-align: left">Find/Find</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">替换</td>
+      <td style="text-align: center">⌘+R</td>
+      <td style="text-align: center">正则发挥作用的地方</td>
+      <td style="text-align: left">Find/Replace</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">查找引用点</td>
+      <td style="text-align: center">⌥+F7</td>
+      <td style="text-align: center">重构或调试的时候经常用到，使用频率高</td>
+      <td style="text-align: left">Find/Find usages</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">查找类</td>
+      <td style="text-align: center">⌘+O</td>
+      <td style="text-align: center">声明式编程，使用频率很高的快捷键</td>
+      <td style="text-align: left">Navigate/Class</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">查找文件</td>
+      <td style="text-align: center">⇧+⌘+O</td>
+      <td style="text-align: center">同上，使用频率很高</td>
+      <td style="text-align: left">Navigate/File</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">查找symbol</td>
+      <td style="text-align: center">⌥+⌘+O</td>
+      <td style="text-align: center">基本不用，不知道与上两者有什么区别</td>
+      <td style="text-align: left">Navigate/Symbol</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">全项目文本搜索</td>
+      <td style="text-align: center">⇧+⌘+F</td>
+      <td style="text-align: center">搜索引用点和文本出现、改bug时非常有用</td>
+      <td style="text-align: left">Find/Find in path</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">查找下一个</td>
+      <td style="text-align: center">⌘+G</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Find/Find Next</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">查找上一个</td>
+      <td style="text-align: center">⇧+⌘+G</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Find/Find Previous</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="运行时runtime">运行时（Runtime）</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">Operation</th>
+      <th style="text-align: center">Mac OSX 10.5+</th>
+      <th style="text-align: center">Comments</th>
+      <th style="text-align: left">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">编译</td>
+      <td style="text-align: center">⌘+F9</td>
+      <td style="text-align: center">调bug时可能是忘了编译最新代码</td>
+      <td style="text-align: left">Make Project</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">运行(最近一个测试)</td>
+      <td style="text-align: center">^+R</td>
+      <td style="text-align: center">非常有用，有时可能节省在测试代码和源文件之间的切换</td>
+      <td style="text-align: left">Run/Run</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">调试</td>
+      <td style="text-align: center">^+D</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Run/Debug</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">打断点/取消断点</td>
+      <td style="text-align: center">⌘+F8</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Toggle Breakpoints</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">查看所有断点</td>
+      <td style="text-align: center">⇧+⌘+F8</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">View Breakpoints</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">跳入</td>
+      <td style="text-align: center">F7</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Run/Step Into</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">跳出</td>
+      <td style="text-align: center">⇧+F8</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Run/Step Out</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">智能跳入(当前行多个调用时)</td>
+      <td style="text-align: center">⇧+F7</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">跳过(下一步)</td>
+      <td style="text-align: center">F8</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Run/Step Over</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">求表达式值</td>
+      <td style="text-align: center">⌥+F8</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Evaluate Expression</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">停止调试</td>
+      <td style="text-align: center">⌘+F2</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: left">Run/Stop</td>
+    </tr>
+  </tbody>
+</table>
